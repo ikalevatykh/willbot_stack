@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  Kinect launch. 
+
+  Usage:
+    willbot_gripper_bringup.launch gripper_ip:=<value>
+-->
+<launch>
+
+  <include file="$(find freenect_launch)/launch/examples/freenect-registered-xyzrgb.launch" />
+
+  <!-- static transform to camera -->
+  <node name="" pkg="tf" type="static_transform_publisher" respawn="true" output="screen"
+      args="1.37832, -0.0119859, 0.68708, -0.23053357693906318, 0.010968847229148588, 0.9729818496425293, -0.006346224101550414  world camera_link 100" />
+
+</launch>

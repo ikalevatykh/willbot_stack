@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  Gripper launch. Opens connection to the gripper. 
+  Starts joint feedback loop.
+
+  Usage:
+    willbot_gripper_bringup.launch gripper_ip:=<value>
+-->
+<launch>
+
+  <!-- gripper_ip: IP-address of the gripper's socket-messaging server -->
+  <arg name="gripper_ip" default="192.168.1.11"/>
+
+  <!-- robotiq s model common -->
+  <node name="robotiq_s_model_control" pkg="robotiq_s_model_control" type="SModelTcpNode.py" respawn="true"
+      output="screen" args="$(arg gripper_ip)" />
+
+  <node name="robotiq_joint_state_publisher" pkg="robotiq_joint_state_publisher" type="s_model_joint_states" 
+      respawn="true" output="screen" >
+    <param name="prefix" type="str" value="hand_"/>
+  </node>
+
+</launch>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  Simulator launch.  Loads willbot description. 
+  Starts Gazebo. Starts moveit interface.
+
+  Usage:
+    willbot_demo.launch
+-->
+<launch>
+  
+
+  
+    <!-- moveit -->
+    <include file="$(find willbot_moveit_config)/launch/willbot_moveit_planning_execution.launch">
+    </include>
+
+</launch>

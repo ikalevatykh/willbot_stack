@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!--
+willbot_macro(prefix)
+
+Creates a willow robotic arm with the passed in prefix.  If there
+is only one arm in the urdf then an empty prefix can be used "".  If
+there are multiple arms then a prefix followed by an "_" is needed.
+-->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  <!-- robotiq s model -->	  
+  <xacro:include filename="$(find robotiq_s_model_visualization)/cfg/s-model_articulated_macro.xacro" />
+  <!-- common stuff -->
+  <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
+  <!-- ur5 -->
+  <xacro:include filename="$(find ur_description)/urdf/ur5.urdf.xacro" />
+
+
+  <xacro:macro name="willbot" params="prefix">
+   
+  	  <!-- arm -->
+  	  <!-- be careful, shoulder_pan has limits -2pi..0 -->
+  	  <xacro:ur5_robot prefix="${prefix}" joint_limited="true"
+    	shoulder_pan_lower_limit="${-2*pi}" shoulder_pan_upper_limit="${0}"
+    	shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${pi}"
+    	elbow_joint_lower_limit="${-pi}" elbow_joint_upper_limit="${pi}"
+    	wrist_1_lower_limit="${-pi}" wrist_1_upper_limit="${pi}"
+    	wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
+    	wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}"
+  	  />
+  	
+  	  <!-- hand -->
+	  <xacro:s-model_articulated prefix="${prefix}hand_"/>   
+	  
+	  <!-- arm to hand adapter -->
+	  <xacro:property name="adapter_radius" value="0.040" />
+	  <xacro:property name="adapter_length" value="0.025" />
+	  <xacro:property name="adapter_weight" value="0.100" />
+	  
+	  <joint name="${prefix}tool0-adapter_fixed_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="${prefix}tool0"/>
+        <child link="${prefix}adapter_link"/>
+      </joint>
+	  
+	  <link name="${prefix}adapter_link">
+        <visual>
+          <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
+          <geometry>
+            <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
+          </geometry>
+          <material name="Grey">
+            <color rgba="0.2 0.2 0.2 1.0"/>
+          </material>
+        </visual>
+        <collision>
+          <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
+          <geometry>
+            <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
+          </geometry>
+        </collision>
+        <xacro:cylinder_inertial radius="${adapter_radius}" length="${adapter_length}" mass="${adapter_weight}">
+          <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
+        </xacro:cylinder_inertial>
+      </link>
+      
+      <joint name="${prefix}adapter-palm_fixed_joint" type="fixed">
+        <origin xyz="0 0 ${adapter_length+0.045}" rpy="${pi/2} 0 ${-pi/4}"/>
+        <parent link="${prefix}adapter_link"/>
+        <child link="${prefix}hand_palm"/>
+      </joint>
+
+      <!-- tool position -->
+      <link name="${prefix}tool" />
+
+      <joint name="${prefix}adapter_link-tool_joint" type="fixed">
+        <origin  rpy="0 0 ${-pi/4}" xyz="0 0 ${adapter_length+0.2}"/>
+        <parent link="${prefix}tool0"/>
+        <child link="${prefix}tool"/>
+      </joint>
+ 
+	  <!-- objects -->
+ 
+ 	  <!--link name="table_link">
+        <visual>
+          <geometry>
+            <box size="1 1 0.1" />
+          </geometry>
+          <material name="LightGrey">
+            <color rgba="0.7 0.7 0.7 1.0"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <box size="1 1 0.1" />
+          </geometry>
+        </collision>
+      </link-->
+
+  </xacro:macro>
+
+</robot>

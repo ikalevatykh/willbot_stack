@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>willbot_ar</name>
+  <version>0.1.0</version>
+  <description>The willbot_ar package</description>
+
+  <maintainer email="igor.kalevatykh@inria.fr">Igor Kalevatykh</maintainer>
+  <author email="igor.kalevatykh@inria.fr">Igor Kalevatykh</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>ar_track_alvar</build_depend>
+  <build_export_depend>ar_track_alvar</build_export_depend>
+  <exec_depend>ar_track_alvar</exec_depend>
+
+  <export>
+  </export>
+</package>

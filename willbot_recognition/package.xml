@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>willbot_recognition</name>
+  <version>0.0.0</version>
+  <description>The willbot_recognition package</description>
+
+  <maintainer email="kalevatykh.igor@inria.fr">Igor Kalevatykh</maintainer>
+  <author email="igor.kalevatykh@inria.fr">Igor Kalevatykh</author>
+
+  <license>LGPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>object_recognition_core</build_depend>
+  <build_depend>object_recognition_msgs</build_depend>
+  <build_depend>object_recognition_tabletop</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_export_depend>object_recognition_core</build_export_depend>
+  <build_export_depend>object_recognition_msgs</build_export_depend>
+  <build_export_depend>object_recognition_tabletop</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <exec_depend>object_recognition_core</exec_depend>
+  <exec_depend>object_recognition_msgs</exec_depend>
+  <exec_depend>object_recognition_tabletop</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <export>
+  </export>
+</package>

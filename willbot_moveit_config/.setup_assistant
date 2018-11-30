@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: willbot_description
+    relative_path: urdf/willbot.urdf.xacro
+    use_jade_xacro: true
+  SRDF:
+    relative_path: config/willbot.srdf
+  CONFIG:
+    author_name: Igor Kalevatykh
+    author_email: igor.kalevatykh@inria.fr
+    generated_timestamp: 1529940918

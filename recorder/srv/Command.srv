@@ -1,0 +1,5 @@
+bool enable_record
+string bag_file_name
+---
+bool success
+string error_string
