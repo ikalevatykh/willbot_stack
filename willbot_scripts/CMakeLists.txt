@@ -167,6 +167,30 @@ include_directories(
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
+install(PROGRAMS
+   scripts/agent_client.py
+   scripts/convert_functions.py
+   scripts/joystick.py
+   scripts/planner.py
+   scripts/send_transform.py
+   scripts/agent_control.py
+   scripts/hand.py
+   scripts/kinect.py
+   scripts/record.py
+   scripts/velocity_controller.py
+   scripts/collect_data.py
+   scripts/joy_control.py
+   scripts/kinect_bag.py
+   scripts/scene.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(FILES
+  launch/agent_control.launch
+  launch/joy_control.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
