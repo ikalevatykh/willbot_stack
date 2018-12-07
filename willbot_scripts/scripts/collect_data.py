@@ -11,7 +11,7 @@ from agent_client import AgentClient
 from hand import RobotiqHand
 from kinect import Kinect
 from planner import CartesianPlanner
-from remote_agent import RemoteAgent
+#from remote_agent import RemoteAgent
 from scene import StandardScene
 from record import Recorder
 

@@ -11,7 +11,7 @@ from control_msgs.msg import JointTrajectoryControllerState
 from control_msgs.msg import FollowJointTrajectoryActionGoal
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import WrenchStamped
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CompressedImage, Image
 from robotiq_s_model_control.msg import _SModel_robot_output as SModelOutputMsg
 from robotiq_s_model_control.msg import _SModel_robot_input as SModelInputMsg
 
@@ -63,9 +63,11 @@ class SignalCollector(object):
 		# rospy.Subscriber("/camera/depth_registered/image_raw/compressed", CompressedImage, 
 		# 	self._depth_raw_cb, queue_size=1)
 
-		rospy.Subscriber("/camera/rgb/image_rect_color/compressed", CompressedImage, 
+		
+
+		rospy.Subscriber("/camera/color/image_rect_color", Image, 
 			self._rgb_cb, queue_size=1)
-		rospy.Subscriber("/camera/depth_registered/image/compressedDepth", CompressedImage, 
+		rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, 
 			self._depth_cb, queue_size=1)
 			
 		print('Waiting for signals...')
