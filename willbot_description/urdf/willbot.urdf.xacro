@@ -3,14 +3,14 @@
 
   <xacro:include filename="$(find willbot_description)/urdf/willbot.macro.xacro" />
 
-  <xacro:willbot prefix=""/>
+  <xacro:willbot prefix="" shoulder_pan_zero="${-pi/2}" adapter_length="${0.084}" adapter_rotation="${pi}"/>
  	  
   <link name="world" />
 
   <joint name="world_joint" type="fixed">
 	<parent link="world" />
 	<child link = "base_link" />
-	<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+	<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${-pi/2}" />
   </joint> 
 
 </robot>
