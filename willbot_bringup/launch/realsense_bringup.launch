@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+  Realsense launch. 
+-->
+<launch>
+
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+<!--
+    <arg name="enable_color" value="true"/>
+    <arg name="enable_depth" value="true"/>
+    <arg name="enable_pointcloud" value="true"/>
+    <arg name="enable_fisheye" value="false"/>
+    <arg name="enable_infra1" value="false"/>
+    <arg name="enable_infra2" value="false"/>
+    <arg name="enable_imu" value="false"/>
+-->
+  </include>
+
+  <!-- static transform to camera -->
+  <!--
+	x: 0.276847403497
+	y: -0.0666757943109
+	z: 0.914580523968
+
+	x: 0.852563150286
+	y: -0.00423564841786
+	z: -0.00315478748331
+	w: 0.52259753288
+  -->
+
+  <!--node name="" pkg="tf" type="static_transform_publisher" respawn="true" output="screen"
+      args="1.37832, -0.0119859, 0.68708, -0.23053357693906318, 0.010968847229148588, 0.9729818496425293, -0.006346224101550414  world camera_link 100" /-->
+
+</launch>
