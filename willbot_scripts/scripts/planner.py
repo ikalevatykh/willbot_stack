@@ -33,6 +33,8 @@ class CartesianPlanner(object):
             raise PlannerException('Cannot execute trajectory')
 
     def compute(self):
+        w1 = pm.fromMsg(self._group.get_current_pose().pose)
+	self._points[0] = w1
         points = [pm.toMsg(w) for w in self._points]
         (plan, frac) = self._group.compute_cartesian_path(points, 0.005, 0.0)
         if frac == 1.0:
