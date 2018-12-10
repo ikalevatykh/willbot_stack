@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(willbot_description)
-find_package(catkin REQUIRED urdf)
+find_package(catkin REQUIRED urdf ur_description robotiq_s_model_visualization)
 catkin_package()
 install(DIRECTORY cfg DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY meshes DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
