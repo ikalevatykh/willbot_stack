@@ -15,6 +15,10 @@ from sensor_msgs.msg import CompressedImage, Image
 from robotiq_s_model_control.msg import _SModel_robot_output as SModelOutputMsg
 from robotiq_s_model_control.msg import _SModel_robot_input as SModelInputMsg
 
+import PIL.Image
+import StringIO
+import numpy as np
+
 from recorder.srv import *
 
 #/pos_based_pos_traj_controller/state #  control_msgs/JointTrajectoryControllerState
@@ -67,7 +71,7 @@ class SignalCollector(object):
 
 		rospy.Subscriber("/camera/color/image_rect_color", Image, 
 			self._rgb_cb, queue_size=1)
-		rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, 
+		rospy.Subscriber("/camera/depth/image_rect_raw", Image, 
 			self._depth_cb, queue_size=1)
 			
 		print('Waiting for signals...')
@@ -105,13 +109,53 @@ class SignalCollector(object):
 	def _hand_output_cb(self, msg):			
 		self._hand_output = msg
 
-	def _rgb_cb(self, msg):			
-		self._rgb = msg
+	def _rgb_cb(self, msg):	
+		# Resize and compress image
+		src = PIL.Image.frombytes("RGB", (msg.width, msg.height), msg.data, "raw", "BGR")
+		
+		src.resize((224, 224), PIL.Image.ANTIALIAS)
+
+		dest = StringIO.StringIO()
+		src.save(dest, format="JPEG")
+		
+		dest_msg = CompressedImage()
+		dest_msg.header.seq = msg.header.seq		
+		dest_msg.header.stamp.secs = msg.header.stamp.secs
+		dest_msg.header.stamp.nsecs = msg.header.stamp.nsecs
+		dest_msg.header.frame_id = msg.header.frame_id
+		dest_msg.format = "JPEG"
+		dest_msg.data = dest.getvalue()
+		### End of compression and resizing		
+
+		self._rgb = dest_msg
+
 	def _depth_cb(self, msg):			
-		self._depth = msg
+		# Resize and compress image
+		src = PIL.Image.frombytes("F", (msg.width, msg.height), msg.data, "raw", "F;16").resize((224, 224), PIL.Image.ANTIALIAS)
+
+		arr = np.array(src).reshape(src.size[0], src.size[1])
+		arr = np.clip(arr, 0, 2000)
+		arr -= np.min(arr)
+		arr *= 255 / np.max(arr)
+
+		src = PIL.Image.fromarray(arr.astype("uint8"))
+
+		dest = StringIO.StringIO()
+		src.save(dest, format="JPEG")
+		
+		dest_msg = CompressedImage()
+		dest_msg.header.seq = msg.header.seq		
+		dest_msg.header.stamp.secs = msg.header.stamp.secs
+		dest_msg.header.stamp.nsecs = msg.header.stamp.nsecs
+		dest_msg.header.frame_id = msg.header.frame_id
+		dest_msg.format = "JPEG"
+		dest_msg.data = dest.getvalue()
+		### End of compression and resizing
+
+		self._depth = dest_msg
+
 	def _depth_raw_cb(self, msg):			
 		self._depth_raw = msg
-
 
 class Bag(object):
 	def __init__(self, signals, file_name, frequency = 10):
