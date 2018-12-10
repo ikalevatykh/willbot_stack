@@ -24,7 +24,7 @@
   <!-- moveit -->
   <include file="$(find willbot_moveit_config)/launch/willbot_moveit_planning_execution.launch" />
 
-  <!-- kinect -->
-  <!--<include file="$(find willbot_bringup)/launch/kinect_bringup.launch" />-->
+  <!-- realsense -->
+  <include file="$(find willbot_bringup)/launch/realsense_bringup.launch" />
 
 </launch>
