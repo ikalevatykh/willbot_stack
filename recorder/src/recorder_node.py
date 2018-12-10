@@ -12,8 +12,8 @@ from control_msgs.msg import FollowJointTrajectoryActionGoal
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import WrenchStamped
 from sensor_msgs.msg import CompressedImage
-from robotiq_s_model_control.msg import _SModel_robot_output as SModelOutputMsg
-from robotiq_s_model_control.msg import _SModel_robot_input as SModelInputMsg
+from robotiq_3f_gripper_control.msg import _SModel_robot_output as SModelOutputMsg
+from robotiq_3f_gripper_control.msg import _SModel_robot_input as SModelInputMsg
 
 from recorder.srv import *
 
@@ -21,8 +21,8 @@ from recorder.srv import *
 #/tool_velocity #  geometry_msgs/TwistStamped
 #/wrench  # geometry_msgs/WrenchStamped
 
-#/SModelRobotInput # robotiq_s_model_control/SModel_robot_input
-#/SModelRobotOutput # robotiq_s_model_control/SModel_robot_output
+#/SModelRobotInput # robotiq_3f_gripper_control/SModel_robot_input
+#/SModelRobotOutput # robotiq_3f_gripper_control/SModel_robot_output
 
 #/camera/rgb/image_color/compressed #  sensor_msgs/CompressedImage
 #/camera/depth_registered/image/compressedDepth  # sensor_msgs/CompressedImage

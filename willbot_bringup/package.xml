@@ -11,15 +11,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>controller_manager</build_depend>
-  <build_depend>robotiq_s_model_control</build_depend>
+  <build_depend>robotiq_3f_gripper_control</build_depend>
   <build_depend>ur_modern_driver</build_depend>
   <build_depend>willbot_description</build_depend>
   <build_export_depend>controller_manager</build_export_depend>
-  <build_export_depend>robotiq_s_model_control</build_export_depend>
+  <build_export_depend>robotsiq_3f_gripper_control</build_export_depend>
   <build_export_depend>ur_modern_driver</build_export_depend>
   <build_export_depend>willbot_description</build_export_depend>
   <exec_depend>controller_manager</exec_depend>
-  <exec_depend>robotiq_s_model_control</exec_depend>
+  <exec_depend>robotiq_3f_gripper_control</exec_depend>
   <exec_depend>ur_modern_driver</exec_depend>
   <exec_depend>willbot_description</exec_depend>
 

@@ -9,7 +9,7 @@ there are multiple arms then a prefix followed by an "_" is needed.
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- robotiq s model -->
-  <xacro:include filename="$(find robotiq_s_model_visualization)/cfg/s-model_articulated_macro.xacro" />
+  <xacro:include filename="$(find robotiq_3f_gripper_visualization)/cfg/robotiq-3f-gripper_articulated_macro.xacro" />
   <!-- common stuff -->
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
   <!-- ur5 -->
@@ -29,7 +29,7 @@ there are multiple arms then a prefix followed by an "_" is needed.
       wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}" />
 
     <!-- hand -->
-    <xacro:s-model_articulated prefix="${prefix}hand_"/>
+    <xacro:robotiq-3f-gripper_articulated prefix="${prefix}hand_"/>
 
     <!-- arm to hand adapter -->
     <xacro:property name="adapter_radius" value="0.040" />

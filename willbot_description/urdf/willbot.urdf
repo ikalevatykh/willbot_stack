@@ -317,7 +317,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.020 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_0.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_0.STL"/>
       </geometry>
       <material name="gray">
         <color rgba="0.2 0.2 0.2 1"/>
@@ -326,7 +326,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0.020 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_0.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_0.STL"/>
       </geometry>
       <material name="yellow">
         <color rgba="0 1 1 1"/>
@@ -342,14 +342,14 @@
     <visual>
       <origin rpy="0 0 -0.52" xyz="0.050 -.028 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_1.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_1.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 -0.52" xyz="0.050 -.028 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_1.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_1.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -368,14 +368,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.039 0 0.0075"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_2.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_2.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0.039 0 0.0075"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_2.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_2.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -389,14 +389,14 @@
     <visual>
       <origin rpy="0 0 0.52" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_3.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_3.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 0.52" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_3.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_3.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -435,7 +435,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.020 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_0.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_0.STL"/>
       </geometry>
       <material name="gray">
         <color rgba="0.2 0.2 0.2 1"/>
@@ -444,7 +444,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0.020 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_0.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_0.STL"/>
       </geometry>
       <material name="yellow">
         <color rgba="0 1 1 1"/>
@@ -460,14 +460,14 @@
     <visual>
       <origin rpy="0 0 -0.52" xyz="0.050 -.028 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_1.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_1.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 -0.52" xyz="0.050 -.028 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_1.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_1.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -486,14 +486,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.039 0 0.0075"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_2.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_2.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0.039 0 0.0075"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_2.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_2.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -507,14 +507,14 @@
     <visual>
       <origin rpy="0 0 0.52" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_3.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_3.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 0.52" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_3.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_3.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -553,7 +553,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.020 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_0.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_0.STL"/>
       </geometry>
       <material name="gray">
         <color rgba="0.2 0.2 0.2 1"/>
@@ -562,7 +562,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0.020 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_0.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_0.STL"/>
       </geometry>
       <material name="yellow">
         <color rgba="0 1 1 1"/>
@@ -578,14 +578,14 @@
     <visual>
       <origin rpy="0 0 -0.52" xyz="0.050 -.028 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_1.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_1.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 -0.52" xyz="0.050 -.028 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_1.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_1.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -604,14 +604,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.039 0 0.0075"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_2.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_2.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0.039 0 0.0075"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_2.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_2.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -625,14 +625,14 @@
     <visual>
       <origin rpy="0 0 0.52" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/link_3.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/link_3.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
     <collision>
       <origin rpy="0 0 0.52" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/link_3.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/link_3.STL"/>
       </geometry>
       <material name="yellow"/>
     </collision>
@@ -670,7 +670,7 @@
   <link name="hand_palm">
     <visual>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/visual/palm.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/visual/palm.STL"/>
       </geometry>
       <material name="gray">
         <color rgba="0.2 0.2 0.2 1"/>
@@ -678,7 +678,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robotiq_s_model_visualization/meshes/s-model_articulated/collision/palm.STL"/>
+        <mesh filename="package://robotiq_3f_gripper_visualization/meshes/s-model_articulated/collision/palm.STL"/>
       </geometry>
       <material name="yellow">
         <color rgba="0 1 1 1"/>

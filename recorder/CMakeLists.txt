@@ -4,7 +4,7 @@ project(recorder)
 find_package(catkin REQUIRED COMPONENTS
   control_msgs
   geometry_msgs
-  robotiq_s_model_control
+  robotiq_3f_gripper_control
   roscpp
   rospy
   sensor_msgs
@@ -26,5 +26,5 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime control_msgs geometry_msgs robotiq_s_model_control roscpp rospy sensor_msgs std_msgs
+  CATKIN_DEPENDS message_runtime control_msgs geometry_msgs robotiq_3f_gripper_control roscpp rospy sensor_msgs std_msgs
 )

@@ -12,13 +12,13 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>urdf</build_depend>
   <build_depend>ur_description</build_depend>
-  <build_depend>robotiq_s_model_visualization</build_depend>
+  <build_depend>robotiq_3f_gripper_visualization</build_depend>
   <build_export_depend>urdf</build_export_depend>
   <build_export_depend>ur_description</build_export_depend>
-  <build_export_depend>robotiq_s_model_visualization</build_export_depend>
+  <build_export_depend>robotiq_3f_gripper_visualization</build_export_depend>
   <exec_depend>urdf</exec_depend>
   <exec_depend>ur_description</exec_depend>
-  <exec_depend>robotiq_s_model_visualization</exec_depend>
+  <exec_depend>robotiq_3f_gripper_visualization</exec_depend>
 
   <export>
   </export>

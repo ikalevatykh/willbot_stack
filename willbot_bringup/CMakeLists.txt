@@ -3,7 +3,7 @@ project(willbot_bringup)
 
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
-  robotiq_s_model_control
+  robotiq_3f_gripper_control
   ur_modern_driver
   willbot_description
 )

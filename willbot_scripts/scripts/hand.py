@@ -1,7 +1,7 @@
 import numpy as np
 import rospy
-from robotiq_s_model_control.msg import _SModel_robot_input as inputMsg
-from robotiq_s_model_control.msg import _SModel_robot_output as outputMsg
+from robotiq_3f_gripper_control.msg import _SModel_robot_input as inputMsg
+from robotiq_3f_gripper_control.msg import _SModel_robot_output as outputMsg
 
 
 class RobotiqHand():
@@ -49,8 +49,8 @@ class RobotiqHand():
         self.command.rGTO = 1
         self.command.rATR = 0
         self.command.rPRA = position
-        self.command.rSPA = 1 #255
-        self.command.rFRA = 1 #150
+        self.command.rSPA = 255
+        self.command.rFRA = 150
         self.pub.publish(self.command)
 
     def open(self, wait=False):
