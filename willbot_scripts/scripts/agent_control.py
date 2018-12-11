@@ -15,15 +15,33 @@ from agent_client import AgentClient
 from hand import RobotiqHand
 from kinect import Kinect
 from planner import CartesianPlanner
-from remote_agent import RemoteAgent
 from scene import StandardScene
 from velocity_controller import VelocityController, ControllerException
 
 
 class AgentControllerNode(object):
+    """
+    Script for evaluating a pickup agents permormance.
+    Private ROS parameters:
+     auto [False] - if True robot pickup a cube and place it to a random 
+                    position before each experiment.
+     experiment_path [''] - path to save results.
+     seed [1000]- start seed for experiments.
+     count [1] - experiments count.
+     max_steps [100] - max steps per trajectory.
+     velocity_scale [1.0] - scale velocity coeffitient for real robot.
+     agent_port [9999] - port at wich agent server listens.
+     depth_conversion [2] - depth converstion method (one of 0,1,2). Have to be 
+                            the same as used for dataset collection. See kinect.py:65.
+     email - address to send an email in case of emergency.
+    """
+
     def __init__(self):
         print('Setup...')
-        #agent = RemoteAgent(0)
+
+        self._precise_grasp = False
+        self._cube_size = (0.06, 0.06, 0.06)
+        self._cube_z = 0.06 / 2 + 0.11
 
         self._notify = lambda msg: None
         email = rospy.get_param('~email', '')
@@ -31,7 +49,8 @@ class AgentControllerNode(object):
             server = smtplib.SMTP('smtp.gmail.com:587')
             server.starttls()
             server.login('willow.robot', 'Willow_2018')
-            self._notify = lambda msg: server.sendmail("willow.robot@gmail.com", email, '\n' + msg)
+            self._notify = lambda msg: server.sendmail(
+                "willow.robot@gmail.com", email, '\n' + msg)
 
         print('Connecting arm...')
         arm = moveit_commander.MoveGroupCommander("manipulator")
@@ -52,12 +71,11 @@ class AgentControllerNode(object):
         print('Connecting hand...')
         hand = RobotiqHand()
         hand.mode = 1
-        #hand.open(wait=True)
         self._hand = hand
         print('OK')
 
         print('Connecting kinect...')
-        depth_conv = rospy.get_param('~depth_conversion', 0)
+        depth_conv = rospy.get_param('~depth_conversion', 2)
         cam = Kinect(depth=True, depth_conv=depth_conv)
         self._cam = cam
         print('OK')
@@ -69,7 +87,8 @@ class AgentControllerNode(object):
         if not hand.is_object_held:
             hand.open(wait=True)
             arm.detach_object('box')
-            scene.add_box('box', (0.06, 0.06, 0.06), (0.28, 0.00, 0.041), color=(1, 0, 0))
+            scene.add_box('box', self._cube_size,
+                          (0.28, 0.00, self._cube_z), color=(1, 0, 0))
             self._object_name = 'box'
             self._object_attached = False
         else:
@@ -79,25 +98,24 @@ class AgentControllerNode(object):
         env_name = rospy.get_param('~env', 'UR5-PickEnv')
         agent_type = rospy.get_param('~agent', 'network')
         settings = dict(
-            env_name = env_name,
-            agent_type = agent_type)
+            env_name=env_name,
+            agent_type=agent_type)
         if agent_type == 'network':
             settings.update(
-                arch = rospy.get_param('~arch', 'resnet18'),
-                epoch = rospy.get_param('~epoch'),
-                net_path = rospy.get_param('~net_path'),
-                timesteps = rospy.get_param('~timesteps', 5),
-                max_steps = rospy.get_param('~max_steps', 200),
-                dim_action = rospy.get_param('~dim_action', 4),
-                steps_action = rospy.get_param('~steps_action', 4),
+                arch=rospy.get_param('~arch', 'resnet18'),
+                epoch=rospy.get_param('~epoch'),
+                net_path=rospy.get_param('~net_path'),
+                timesteps=rospy.get_param('~timesteps', 5),
+                max_steps=rospy.get_param('~max_steps', 200),
+                dim_action=rospy.get_param('~dim_action', 4),
+                steps_action=rospy.get_param('~steps_action', 4),
             )
         elif agent_type == 'dataset':
             settings.update(
-                dataset_path = rospy.get_param('~path'),
-                lmdb = rospy.get_param('~lmdb', True),
+                dataset_path=rospy.get_param('~path'),
+                lmdb=rospy.get_param('~lmdb', True),
             )
         self._settings = settings
-
         print('Ready!')
 
     def run(self):
@@ -107,7 +125,8 @@ class AgentControllerNode(object):
         except rospy.ROSInterruptException:
             pass
         except Exception as e:
-            self._notify('Agent control failed on step {} / {} with error: {}'.format(self._step, self._count, e.message))
+            self._notify('Agent control failed on step {} / {} with error: {}'.format(
+                self._step, self._count, e.message))
             raise e
 
     def _run(self):
@@ -121,16 +140,18 @@ class AgentControllerNode(object):
         plan = CartesianPlanner(arm)
         cube_x = 0.28
         cube_y = 0.0
-        
+
         succeed = 0
         executed = 0
-        
+
         auto_repeat = rospy.get_param('~auto', False)
 
         experiment_path = rospy.get_param('~experiment_path', '')
         seed = rospy.get_param('~seed', 1000)
         count = rospy.get_param('~count', 1)
         self._count = count
+
+        max_steps = rospy.get_param('~max_steps', 100)
 
         plan.movez(0.15)
         plan.execute(wait=True)
@@ -155,22 +176,16 @@ class AgentControllerNode(object):
                 self.place_cube(plan, cube_x, cube_y)
                 self.go_to_start(plan)
 
-                #plan.move(pos=(0.28, 0.0, 0.15))
-                #plan.move(pos=(0.28, 0.0, 0.225))
-                #plan.execute(wait=True)
-                #print('At start point')
-                #rospy.sleep(4)
-            
             grasped_pos = None
 
             # Run agent
-            print('Agent running ...')     
+            print('Agent running ...')
             vel_scale = rospy.get_param('~velocity_scale', 1.0)
             agent_port = rospy.get_param('~agent_port', 9999)
 
             agent = AgentClient('localhost', agent_port)
             settings = self._settings
-            settings.update(seed = seed)
+            settings.update(seed=seed)
             agent.send_settings(settings)
 
             states = []
@@ -180,13 +195,16 @@ class AgentControllerNode(object):
                 timing = []
                 timing_rate = []
                 t0 = rospy.get_rostime()
-                rate = rospy.Rate(10)
-                for i in range(100):
-                    depth, depth_t = cam.depth_uint8                   
-                    obs = {'depth': depth, 'timestamp': depth_t.to_sec()} #cam.depth_image}
+
+                time_step = 0.1 / vel_scale
+
+                rate = rospy.Rate(1 / time_step)
+                for i in range(max_steps):
+                    depth, depth_t = cam.depth_uint8
+                    obs = {'depth': depth, 'timestamp': depth_t.to_sec()}
                     act = agent.get_action(obs)
                     ta = rospy.get_rostime()
-                    #print(act)
+                    # print(act)
                     if act is None:
                         break
                     states.append(obs)
@@ -195,10 +213,9 @@ class AgentControllerNode(object):
                     v = act['linear_velocity']
                     v = np.array(v) * vel_scale
                     try:
-                        ctrl.step(v, 0.1)#, base_time=depth_t)
+                        ctrl.step(dt=time_step, lin_vel=v)
                     except ControllerException as e:
                         print(e)
-                        #break
 
                     g = act['grip_velocity']
                     if g < -0.01:
@@ -232,47 +249,47 @@ class AgentControllerNode(object):
             plan.reset()
 
             print('Position end: ', arm.get_current_pose().pose)
-            
+
             print('Timing: {:.2f} / min {:.2f} / max {:.2f}'.format(
                 np.mean(timing), np.min(timing), np.max(timing)))
-            #print(timing)           
+
             print('Timing rate: {:.2f} / min {:.2f} / max {:.2f}'.format(
                 np.mean(timing_rate), np.min(timing_rate), np.max(timing_rate)))
 
             print('Success: {}'.format(success))
-            
+
             executed += 1
             if success:
-                succeed += 1            
+                succeed += 1
             print('Rate {} / {}'.format(succeed, executed))
 
             if grasped_pos is not None:
                 self._scene.remove_world_object('box')
                 self.place_cube(plan, *grasped_pos)
-                self._scene.add_box('box', (0.06, 0.06, 0.06), (cube_x, cube_y, 0.041), color=(1, 0, 0))
+                self._scene.add_box(
+                    'box', self._cube_size, (cube_x, cube_y, self._cube_z), color=(1, 0, 0))
             else:
                 self._scene.remove_world_object('box')
-                rospy.sleep(1) 
+                rospy.sleep(1)
                 hand.open(wait=True)
-                #plan.step_tool(pos=(0, 0, -0.1))
                 plan.movez(0.15)
                 plan.execute(wait=True)
-                self._scene.add_box('box', (0.06, 0.06, 0.06), (cube_x, cube_y, 0.041), color=(1, 0, 0))
+                self._scene.add_box(
+                    'box', self._cube_size, (cube_x, cube_y, self._cube_z), color=(1, 0, 0))
 
             if experiment_path:
                 with open(os.path.join(experiment_path, '{}_{}.pkl'.format(seed, success)), 'wb') as output:
-                    pickle.dump(dict(seed=seed, success=success, states=states, actions=actions),  output)
+                    pickle.dump(dict(seed=seed, success=success,
+                                states=states, actions=actions),  output)
 
         self._notify('Agent control done, success rate {} / {}'.format(succeed, executed))
 
     def go_to_start(self, arm):
         self._hand.open(wait=True)
-        #arm.step(pos=(0.0, 0.0, 0.175))
         arm.move(pos=(0.28, 0.0, 0.225), orn=(-0.7, 0.7, 0.0, 0.0))
         arm.execute(wait=True)
 
     def pick_cube(self, arm, cube_x, cube_y):
-        #print('Hey, give me a cube!')
         print(' picking a cube {}:{}'.format(cube_x, cube_y))
         arm.move(pos=(cube_x, cube_y, 0.15))
         arm.execute(wait=True)
@@ -280,37 +297,27 @@ class AgentControllerNode(object):
         hand = self._hand
         while not hand.is_object_held:
             hand.open(wait=True)
-            arm.move(pos=(cube_x, cube_y, 0.05), orn=(-1.0, 0, 0, 0))
-            arm.execute(wait=True)
+
+            if self._precise_grasp:
+                arm.move(pos=(cube_x, cube_y, 0.05), orn=(-1.0, 0, 0, 0))
+                arm.execute(wait=True)
+                rospy.sleep(2)
+                hand.close(wait=True)
+                hand.open(wait=True)
+                arm.move(pos=(cube_x, cube_y, 0.15), orn=(-1.0, 0, 0, 0))
+                arm.execute(wait=True)
+                arm.move(pos=(cube_x, cube_y, 0.05), orn=(-0.7, 0.7, 0.0, 0.0))
+                arm.execute(wait=True)
+            else:
+                arm.move(pos=(cube_x, cube_y, 0.05))
+                arm.execute(wait=True)
+
             rospy.sleep(2)
             hand.close(wait=True)
-            hand.open(wait=True)
-            arm.move(pos=(cube_x, cube_y, 0.15), orn=(-1.0, 0, 0, 0))
-            arm.execute(wait=True)
-            arm.move(pos=(cube_x, cube_y, 0.05), orn=(-0.7, 0.7, 0.0, 0.0))
-            arm.execute(wait=True)
-            rospy.sleep(2)
-            hand.close(wait=True)
-            
-            '''
-            hand.open(wait=True)
-            arm.move(pos=(cube_x, cube_y, 0.05), orn=(-0.7, 0.7, 0.0, 0.0))
-            arm.execute(wait=True)
-            rospy.sleep(2)
-            hand.close(wait=True)
-            hand.open(wait=True)
-            arm.movez(0.15)
-            arm.execute(wait=True)
-            arm.move(pos=(cube_x, cube_y, 0.05), orn=(-1.0, 0, 0, 0))
-            arm.execute(wait=True)
-            rospy.sleep(2)
-            hand.close(wait=True)
-            '''
 
         self.attach_box()
         arm.move(pos=(cube_x, cube_y, 0.15))
         arm.execute(wait=True)
-        #print('Merci!')
         print(' picked')
 
     def place_cube(self, arm, cube_x, cube_y, cube_z=0.052):
@@ -321,7 +328,6 @@ class AgentControllerNode(object):
         self._hand.open(wait=True)
         self.detach_box()
         arm.move(pos=(cube_x, cube_y, 0.15))
-        #arm.move(pos=(0.28, 0.0, 0.225))
         arm.execute(wait=True)
         print(' placed')
 
