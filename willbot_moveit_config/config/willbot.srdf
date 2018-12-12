@@ -45,10 +45,30 @@
         <joint name="wrist_2_joint" value="-1.5708" />
         <joint name="wrist_3_joint" value="0.7854" />
     </group_state>
+    <group_state name="open" group="gripper">
+        <joint name="hand_finger_middle_joint_1" value="0.0495" />
+    </group_state>
+    <group_state name="close" group="gripper">
+        <joint name="hand_finger_middle_joint_1" value="1.2218" />
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="tool" group="gripper" parent_group="manipulator" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="fixed_base" type="fixed" parent_frame="world" child_link="base_link" />
+    <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
+
+    <passive_joint name="hand_finger_1_joint_1" />
+    <passive_joint name="hand_finger_2_joint_1" />
+    <!--passive_joint name="hand_finger_middle_joint_1 " /-->
+    <passive_joint name="hand_palm_finger_1_joint" />
+
+    <passive_joint name="hand_finger_1_joint_2" />
+    <passive_joint name="hand_finger_1_joint_3" />
+    <passive_joint name="hand_palm_finger_2_joint" />
+    <passive_joint name="hand_finger_2_joint_2" />
+    <passive_joint name="hand_finger_2_joint_3" />
+    <passive_joint name="hand_finger_middle_joint_2" />
+    <passive_joint name="hand_finger_middle_joint_3" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="adapter_link" link2="ee_link" reason="Never" />
     <disable_collisions link1="adapter_link" link2="hand_finger_1_link_0" reason="Never" />
