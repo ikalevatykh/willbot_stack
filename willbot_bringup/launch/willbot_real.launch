@@ -17,7 +17,7 @@
   </include>
 
   <!-- bringup gripper -->
-  <include file="$(find willbot_bringup)/launch/gripper_bringup.launch">
+  <include file="$(find willbot_bringup)/launch/gripper_ros_control.launch">
     <arg name="gripper_ip" value="$(arg gripper_ip)"/>
   </include>
 
