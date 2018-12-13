@@ -16,89 +16,7 @@ import rospy
 # IMPORTANT: use hrlbc branch of MIME
 from mime.envs.table_envs.table_scene import TableScene
 
-path = Path('')  # path to the bags and output db
-
-joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint',
-    'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
-
-scene = TableScene(robot_type='UR5', setup='grenoble')
-scene.reset()
-arm = scene._robot.arm
-
-x0, x1 = 0.3, 0.65  # should be the same as in collecting script
-y0, y1 = -0.2, 0.2
-
-
-def forward_kin(q):
-    pos, orn = arm._kinematics.forward(q)
-    return pos
-
-
-db_map_size = 1099511627776  # 1TB
-db_path = path / 'database'
-if not db_path.exists():
-    db_path.mkdir()
-
-db = lmdb.open(str(db_path), db_map_size)
-
-for bag_name in tqdm(path.glob('*.bag')):
-    # bag_name = path / '{}.bag'.format(seed)
-    seed = int(bag_name.stem)
-
-    # cube position
-    np.random.seed(seed)
-    i, j = np.random.random_sample(2)
-    x = x0 + i * (x1 - x0)
-    y = y0 + j * (y1 - y0)
-    cube_pos = (x, y)
-
-    arm_target = []
-    arm_state = []
-    arm_wrench = []
-    tool_velocity = []
-    hand_target = []
-    hand_state = []
-    rgb = []
-    depth = []
-
-    try:
-        bag = rosbag.Bag(str(bag_name))
-    except:
-        continue
-    T0 = bag.get_start_time()
-    T1 = bag.get_end_time()
-
-    for topic, msg, t in bag.read_messages():
-        if topic == 'traj_controller_goal':
-            arm_target.append(msg)
-        if topic == 'traj_controller_state':
-            arm_state.append(msg)
-        if topic == 'tool_velocity':
-            tool_velocity.append(msg)
-        if topic == 'wrench':
-            arm_wrench.append(msg)
-        if topic == 'hand_output':
-            hand_target.append(msg)
-        if topic == 'hand_input':
-            hand_state.append(msg)
-        if topic == 'rgb':
-            rgb.append(msg)
-        if topic == 'depth':
-            depth.append(msg)
-    bag.close()
-
-    # arm target
-    target_q = []
-    target_t = []
-    for msg in arm_target[1:]:
-        t0 = msg.header.stamp.to_sec() - T0
-        t = [t0 + p.time_from_start.to_sec()
-                                           for p in msg.goal.trajectory.points]
-        ind = [msg.goal.trajectory.joint_names.index(n) for n in joint_names]
-#!/usr/bin/env python3
-
-
-# IMPORTANT: use hrlbc branch of MIME
+from bc.dataset import Keys, Frames, Scalars
 
 path = Path('')  # path to the bags and output db
 
@@ -109,7 +27,7 @@ scene = TableScene(robot_type='UR5', setup='grenoble')
 scene.reset()
 arm = scene._robot.arm
 
-x0, x1 = 0.3, 0.65  # should be the same as in collecting script
+x0, x1 = 0.25, 0.65  # should be the same as in collecting script
 y0, y1 = -0.2, 0.2
 
 
