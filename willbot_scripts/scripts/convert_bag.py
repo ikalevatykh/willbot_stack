@@ -1,34 +1,37 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import lmdb
 import numpy as np
-import rosbag
-import rospy
+import pickle as pkl
 from io import BytesIO
 from pathlib import Path
-import pickle as pkl
-from pykdl_utils.kdl_kinematics import KDLKinematics
+
+import lmdb
 from scipy import interpolate
 from scipy import signal
-from urdf_parser_py.urdf import URDF
 from tqdm import tqdm
 
-from keys import Keys
-from scalars import Scalars
+import rosbag
+import rospy
 
-path = Path('/root/data/pick')
+# IMPORTANT: use hrlbc branch of MIME
+from mime.envs.table_envs.table_scene import TableScene
 
+path = Path('')  # path to the bags and output db
 
-base_link = 'base_link'
-tool_link = 'tool'
-urdf = '/root/src/willbot_stack/willbot_description/urdf/willbot.urdf'
-urdf = URDF.from_xml_file(urdf)
-kdl_kin = KDLKinematics(urdf, base_link, tool_link)
-joint_names = kdl_kin.get_joint_names()
+joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint',
+    'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+
+scene = TableScene(robot_type='UR5', setup='grenoble')
+scene.reset()
+arm = scene._robot.arm
+
+x0, x1 = 0.3, 0.65  # should be the same as in collecting script
+y0, y1 = -0.2, 0.2
+
 
 def forward_kin(q):
-    m = kdl_kin.forward(q)
-    return np.squeeze(np.asarray(m[:3, 3]))
+    pos, orn = arm._kinematics.forward(q)
+    return pos
 
 
 db_map_size = 1099511627776  # 1TB
@@ -38,9 +41,16 @@ if not db_path.exists():
 
 db = lmdb.open(str(db_path), db_map_size)
 
+for bag_name in tqdm(path.glob('*.bag')):
+    # bag_name = path / '{}.bag'.format(seed)
+    seed = int(bag_name.stem)
 
-for seed in tqdm(range(0, 11)):
-    bag_name = path / '{}.bag'.format(seed)
+    # cube position
+    np.random.seed(seed)
+    i, j = np.random.random_sample(2)
+    x = x0 + i * (x1 - x0)
+    y = y0 + j * (y1 - y0)
+    cube_pos = (x, y)
 
     arm_target = []
     arm_state = []
@@ -50,9 +60,6 @@ for seed in tqdm(range(0, 11)):
     hand_state = []
     rgb = []
     depth = []
-    
-    scalars = {}
-    keys_dataset = []
 
     try:
         bag = rosbag.Bag(str(bag_name))
@@ -85,7 +92,92 @@ for seed in tqdm(range(0, 11)):
     target_t = []
     for msg in arm_target[1:]:
         t0 = msg.header.stamp.to_sec() - T0
-        t = [t0 + p.time_from_start.to_sec() for p in msg.goal.trajectory.points]
+        t = [t0 + p.time_from_start.to_sec()
+                                           for p in msg.goal.trajectory.points]
+        ind = [msg.goal.trajectory.joint_names.index(n) for n in joint_names]
+#!/usr/bin/env python3
+
+
+# IMPORTANT: use hrlbc branch of MIME
+
+path = Path('')  # path to the bags and output db
+
+joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint',
+    'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+
+scene = TableScene(robot_type='UR5', setup='grenoble')
+scene.reset()
+arm = scene._robot.arm
+
+x0, x1 = 0.3, 0.65  # should be the same as in collecting script
+y0, y1 = -0.2, 0.2
+
+
+def forward_kin(q):
+    pos, orn = arm._kinematics.forward(q)
+    return pos
+
+
+db_map_size = 1099511627776  # 1TB
+db_path = path / 'database'
+if not db_path.exists():
+    db_path.mkdir()
+
+db = lmdb.open(str(db_path), db_map_size)
+
+for bag_name in tqdm(path.glob('*.bag')):
+    # bag_name = path / '{}.bag'.format(seed)
+    seed = int(bag_name.stem)
+
+    # cube position
+    np.random.seed(seed)
+    i, j = np.random.random_sample(2)
+    x = x0 + i * (x1 - x0)
+    y = y0 + j * (y1 - y0)
+    cube_pos = (x, y)
+
+    arm_target = []
+    arm_state = []
+    arm_wrench = []
+    tool_velocity = []
+    hand_target = []
+    hand_state = []
+    rgb = []
+    depth = []
+
+    try:
+        bag = rosbag.Bag(str(bag_name))
+    except:
+        continue
+    T0 = bag.get_start_time()
+    T1 = bag.get_end_time()
+
+    for topic, msg, t in bag.read_messages():
+        if topic == 'traj_controller_goal':
+            arm_target.append(msg)
+        if topic == 'traj_controller_state':
+            arm_state.append(msg)
+        if topic == 'tool_velocity':
+            tool_velocity.append(msg)
+        if topic == 'wrench':
+            arm_wrench.append(msg)
+        if topic == 'hand_output':
+            hand_target.append(msg)
+        if topic == 'hand_input':
+            hand_state.append(msg)
+        if topic == 'rgb':
+            rgb.append(msg)
+        if topic == 'depth':
+            depth.append(msg)
+    bag.close()
+
+    # arm target
+    target_q = []
+    target_t = []
+    for msg in arm_target[1:]:
+        t0 = msg.header.stamp.to_sec() - T0
+        t = [t0 + p.time_from_start.to_sec()
+                                           for p in msg.goal.trajectory.points]
         ind = [msg.goal.trajectory.joint_names.index(n) for n in joint_names]
         pos = [np.array(p.positions)[ind] for p in msg.goal.trajectory.points]
         target_q += pos
@@ -162,15 +254,16 @@ for seed in tqdm(range(0, 11)):
                 joint_position=actual_q[i],
                 joint_velocity=actual_dq[i],
                 tool_position=actual_x[i],
-                #linear_velocity=actual_dx[i],
+                # linear_velocity=actual_dx[i],
                 wrench=wrench[i],
-                grip_position=actual_grip_pos[i]
+                grip_position=actual_grip_pos[i],
+                cube_position=cube_pos
             )
 
             action = dict(
-                #joint_position=desired_q[i],
-                #joint_velocity=desired_dq[i],
-                #tool_position=desired_x[i],
+                # joint_position=desired_q[i],
+                # joint_velocity=desired_dq[i],
+                # tool_position=desired_x[i],
                 linear_velocity=desired_dx[i],
                 grip_velocity=target_grip_vel[i]
             )
@@ -178,36 +271,14 @@ for seed in tqdm(range(0, 11)):
             img_rgb = rgb[i].data
             img_depth = depth[i].data
 
-            dic_entry_lmdb = dict(
-                rgb0=img_rgb,
-                depth0=img_depth
-            )
-
-            dic_entry_pkl = dict(
+            dic_entry = dict(
                 state=state,
-                action=action
+                action=action,
+                rgb=img_rgb,
+                depth=img_depth
             )
-            
-            # Index of data
-            ind = 'S{:06}/T{:06}'.format(seed, i)
 
-            # Write the frames to LMDB
             dic_buf = BytesIO()
-            pkl.dump(dic_entry_lmdb, dic_buf)
+            pkl.dump(dic_entry, dic_buf)
+            ind = '{:06}/{:06}'.format(seed, i)
             txn.put(ind.encode('ascii'), dic_buf.getvalue())
-
-            # Write scalars to dictionnary
-            scalars[ind] = dic_entry_pkl
-
-            # Add index to key list
-            keys_dataset.append(ind.decode('ascii'))
-
-    # Save list of keys
-    keys_file = db_path / '_keys_'
-    keys = Keys(keys=keys_dataset)
-    pkl.dump(keys, open(str(keys_file), 'wb'))
-
-    # Save scalars
-    path_scalars = db_path / 'scalars.pkl'
-    scalars = Scalars(scalars)
-    pkl.dump(scalars, open(str(path_scalars), 'wb'))   
