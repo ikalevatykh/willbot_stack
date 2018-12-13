@@ -107,3 +107,5 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+willbot_recognition/CATKIN_IGNORE

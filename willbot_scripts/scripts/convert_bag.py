@@ -42,6 +42,8 @@ if not db_path.exists():
     db_path.mkdir()
 
 db = lmdb.open(str(db_path), db_map_size)
+scalars = {}
+keys_dataset = []
 
 for bag_name in tqdm(path.glob('*.bag')):
     # bag_name = path / '{}.bag'.format(seed)
@@ -189,14 +191,35 @@ for bag_name in tqdm(path.glob('*.bag')):
             img_rgb = rgb[i].data
             img_depth = depth[i].data
 
-            dic_entry = dict(
-                state=state,
-                action=action,
-                rgb=img_rgb,
-                depth=img_depth
+            dic_entry_lmdb = dict(
+                rgb0=img_rgb,
+                depth0=img_depth
             )
 
+            dic_entry_pkl = dict(
+                state=state,
+                action=action
+            )
+
+            # Index of data
+            ind = 'S{:06}/T{:06}'.format(seed, i)
+
+            # Write the frames to LMDB
             dic_buf = BytesIO()
-            pkl.dump(dic_entry, dic_buf)
-            ind = '{:06}/{:06}'.format(seed, i)
+            pkl.dump(dic_entry_lmdb, dic_buf)
             txn.put(ind.encode('ascii'), dic_buf.getvalue())
+
+            # Write scalars to dictionnary
+            scalars[ind] = dic_entry_pkl
+
+            # Add index to key list
+            keys_dataset.append(ind)
+
+keys_file = db_path / '_keys_'
+keys = Keys(keys=keys_dataset)
+pkl.dump(keys, open(str(keys_file), 'wb'))
+
+# Save scalars
+path_scalars = db_path / 'scalars.pkl'
+scalars = Scalars(scalars)
+pkl.dump(scalars, open(str(path_scalars), 'wb'))   
