@@ -62,8 +62,9 @@
     -->
     
     <!-- MoveGroup capabilities to load -->
-    <param name="capabilities" value="move_group/MoveGroupCartesianPathService
-				      move_group/MoveGroupExecuteService
+    <param name="capabilities" value="
+              move_group/MoveGroupCartesianPathService
+				      move_group/MoveGroupExecuteTrajectoryAction
 				      move_group/MoveGroupKinematicsService
 				      move_group/MoveGroupMoveAction
 				      move_group/MoveGroupPickPlaceAction
