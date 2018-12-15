@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The willbot_recognition package</description>
 
-  <maintainer email="kalevatykh.igor@inria.fr">Igor Kalevatykh</maintainer>
+  <maintainer email="igor.kalevatykh@inria.fr">Igor Kalevatykh</maintainer>
   <author email="igor.kalevatykh@inria.fr">Igor Kalevatykh</author>
 
   <license>LGPLv3</license>
