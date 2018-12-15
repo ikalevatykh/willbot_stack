@@ -18,7 +18,7 @@ class CartesianPlanner(object):
         self._points = []
         self.reset()
         self._max_tool_velocity = (0.05, 0.25)
-        
+
     def reset(self):
         w1 = pm.fromMsg(self._group.get_current_pose().pose)
         print(self._group.get_current_pose().pose)
@@ -33,8 +33,10 @@ class CartesianPlanner(object):
             raise PlannerException('Cannot execute trajectory')
 
     def compute(self):
+        w1 = pm.fromMsg(self._group.get_current_pose().pose)
+        self._points[0] = w1
         points = [pm.toMsg(w) for w in self._points]
-        (plan, frac) = self._group.compute_cartesian_path(points, 0.005, 0.0)
+        (plan, frac) = self._group.compute_cartesian_path(points, 0.005, 5)
         if frac == 1.0:
             self._points = [self._points[-1], ]
             # Filter waypoints strictly increasing in time
@@ -76,6 +78,22 @@ class CartesianPlanner(object):
         dw = PyKDL.Frame(PyKDL.Rotation(), PyKDL.Vector())
         dw = self._update(dw, pos, orn)
         w = self._points[-1] * dw
+
+        print(w.M)
+
+        self._points.append(w)
+
+    def move_origin(self, origin, pos=None, orn=None):
+        x, y, z = origin
+
+        w = self._points[-1]
+        w = self._update(w, pos, orn)
+
+        dw = PyKDL.Frame(PyKDL.Rotation(), PyKDL.Vector(-x, -y, -z))
+        w = w * dw
+
+        print(w.p)
+
         self._points.append(w)
 
     def rotate_about(self, origin, axis, angle):
@@ -105,7 +123,7 @@ class CartesianPlanner(object):
                 q = PyKDL.Rotation.RPY(*orn)
         return PyKDL.Frame(q, p)
 
-    def _compute_manual(self):      
+    def _compute_manual(self):
         if CartesianPlanner.KIN_CACHE is None:
             base_link = group.get_planning_frame()
             end_link = group.get_end_effector_link()
