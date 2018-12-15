@@ -24,7 +24,7 @@ class JoyControllerNode(object):
         scene = StandardScene()
         joy = Joystick()
         hand = RobotiqHand()
-        ws = np.array([[0.3, -0.2, 0.05], [0.75, 0.2, 0.25]])
+        ws = np.array([[0.3, -0.2, 0.05], [0.9, 0.2, 0.25]])
         arm.set_workspace(ws.flatten())        
 
         print('Ready!')
