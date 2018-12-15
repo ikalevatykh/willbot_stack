@@ -48,6 +48,9 @@
     <group_state name="open" group="gripper">
         <joint name="hand_finger_middle_joint_1" value="0.0495" />
     </group_state>
+    <group_state name="half_open" group="gripper">
+        <joint name="hand_finger_middle_joint_1" value="0.22" />
+    </group_state>
     <group_state name="close" group="gripper">
         <joint name="hand_finger_middle_joint_1" value="1.2218" />
     </group_state>
@@ -56,7 +59,6 @@
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="fixed_base" type="fixed" parent_frame="world" child_link="base_link" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
-
     <passive_joint name="hand_finger_1_joint_1" />
     <passive_joint name="hand_finger_2_joint_1" />
     <!--passive_joint name="hand_finger_middle_joint_1 " /-->
@@ -84,7 +86,6 @@
     <disable_collisions link1="adapter_link" link2="hand_finger_middle_link_2" reason="Never" />
     <disable_collisions link1="adapter_link" link2="hand_finger_middle_link_3" reason="Never" />
     <disable_collisions link1="adapter_link" link2="hand_palm" reason="Adjacent" />
-    <disable_collisions link1="adapter_link" link2="wrist_1_link" reason="Never" />
     <disable_collisions link1="adapter_link" link2="wrist_2_link" reason="Never" />
     <disable_collisions link1="adapter_link" link2="wrist_3_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="shoulder_link" reason="Adjacent" />

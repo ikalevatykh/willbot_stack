@@ -37,7 +37,7 @@ there are multiple arms then a prefix followed by an "_" is needed.
     <xacro:property name="adapter_weight" value="0.100" />
 
     <joint name="${prefix}tool0-adapter_fixed_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 ${-pi/4}"/>
       <parent link="${prefix}tool0"/>
       <child link="${prefix}adapter_link"/>
     </joint>
@@ -58,13 +58,19 @@ there are multiple arms then a prefix followed by an "_" is needed.
           <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
         </geometry>
       </collision>
+      <collision>
+        <origin xyz="0.055 0.0 0.035" rpy="0 0 0" />
+        <geometry>
+          <box size="0.11 0.09 0.07" />
+        </geometry>
+      </collision>
       <xacro:cylinder_inertial radius="${adapter_radius}" length="${adapter_length}" mass="${adapter_weight}">
         <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
       </xacro:cylinder_inertial>
     </link>
 
     <joint name="${prefix}adapter-palm_fixed_joint" type="fixed">
-      <origin xyz="0 0 ${adapter_length+0.045}" rpy="${pi/2} 0 ${-pi/4}"/>
+      <origin xyz="0 0 ${adapter_length+0.045}" rpy="${pi/2} 0 0"/>
       <parent link="${prefix}adapter_link"/>
       <child link="${prefix}hand_palm"/>
     </joint>
@@ -76,6 +82,15 @@ there are multiple arms then a prefix followed by an "_" is needed.
       <origin rpy="0 0 ${-pi/4}" xyz="0 0 ${adapter_length+0.2}"/>
       <parent link="${prefix}tool0"/>
       <child link="${prefix}tool"/>
+    </joint>
+
+    <!-- hand palm plane position -->
+    <link name="${prefix}hand_palm_plane" />
+
+    <joint name="${prefix}adapter_link-hand_palm_plane" type="fixed">
+      <origin rpy="0 0 ${-pi/4}" xyz="0 0 ${adapter_length+0.095}"/>
+      <parent link="${prefix}tool0"/>
+      <child link="${prefix}hand_palm_plane"/>
     </joint>
 
   </xacro:macro>
