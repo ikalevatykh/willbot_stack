@@ -7,7 +7,7 @@ from moveit_msgs.msg import PlanningScene, PlanningSceneComponents, ObjectColor
 
 class StandardScene(object):
     def __init__(self):
-        scene = moveit_commander.PlanningSceneInterface()        
+        scene = moveit_commander.PlanningSceneInterface()
         robot = moveit_commander.RobotCommander()
         self._planning_frame = robot.get_planning_frame()
         self._scene = scene
@@ -21,7 +21,7 @@ class StandardScene(object):
         # Mark table and wall zone as obstacles
         print('update scene')
         self.add_box("table", (1.2, 0.8, 0.1), (0.36, 0.0, -0.05))
-        self.add_box("rubber", (1.2, 0.625, 0.01), (0.36, 0.0, 0.005), color=(0, 0, 0))
+        self.add_box("rubber", (1.2, 0.625, 0.01), (0.36, 0.0, 0.005), color=(1, 1, 1))
         self.add_box("wall", (1.2, 0.04, 0.7), (0.36, -0.42, 0.25))
         rospy.sleep(1)
         
