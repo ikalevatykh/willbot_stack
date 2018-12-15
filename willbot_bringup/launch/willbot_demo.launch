@@ -8,6 +8,10 @@
 -->
 <launch>
   
+    <!-- robot model -->
+  <include file="$(find willbot_description)/launch/willbot_upload.launch">
+    <arg name="limited" value="true"/>
+  </include>
 
   
     <!-- moveit -->
