@@ -59,7 +59,7 @@ class VelocityController(object):
         tool_tf = kdl.Frame(rot_step, kdl.Vector())
 
         X1 = base_tf * X0 * tool_tf
-        X2 = base_tf * X1 * tool_tf        
+        X2 = base_tf * X1 * tool_tf
 
         p = np.array([X2.p.x(), X2.p.y(), X2.p.z()])
         if np.any(p < self._workspace[0, :]-0.01) or np.any(p > self._workspace[1, :]+0.01):
@@ -91,7 +91,7 @@ class VelocityController(object):
         if base_time is not None:
             traj.header.stamp = base_time
         traj.joint_names = self._joint_names
-        # target position      
+        # target position
         point = JointTrajectoryPoint()
         point.positions = q1
         point.time_from_start = rospy.Duration(dt)
@@ -110,7 +110,7 @@ class VelocityController(object):
 
         rospy.sleep(0.5)
         self._x = pm.fromMsg(self._group.get_current_pose().pose)
-        self._q = self._group.get_current_joint_values()        
+        self._q = self._group.get_current_joint_values()
 
     def __enter__(self):
         return self
