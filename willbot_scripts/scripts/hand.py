@@ -1,7 +1,7 @@
 import numpy as np
 import rospy
-from robotiq_3f_gripper_control.msg import _SModel_robot_input as inputMsg
-from robotiq_3f_gripper_control.msg import _SModel_robot_output as outputMsg
+from robotiq_3f_gripper_control.msg import _Robotiq3FGripper_robot_input  as inputMsg
+from robotiq_3f_gripper_control.msg import _Robotiq3FGripper_robot_output as outputMsg
 
 
 class RobotiqHand():
@@ -17,14 +17,14 @@ class RobotiqHand():
             self._is_object_held = (status.gSTA == 1 or status.gSTA == 2)
             self._position = status.gPOA
 
-        msg_type = inputMsg.SModel_robot_input
-        rospy.Subscriber("SModelRobotInput", msg_type, status_cb)
+        msg_type = inputMsg.Robotiq3FGripper_robot_input
+        rospy.Subscriber("Robotiq3FGripperRobotInput", msg_type, status_cb)
         while self._status_msg is None:
             rospy.sleep(0.1)
 
-        msg_type = outputMsg.SModel_robot_output
-        self.pub = rospy.Publisher('SModelRobotOutput', msg_type, queue_size=10)
-        self.command = outputMsg.SModel_robot_output()
+        msg_type = outputMsg.Robotiq3FGripper_robot_output
+        self.pub = rospy.Publisher('Robotiq3FGripperRobotOutput', msg_type, queue_size=10)
+        self.command = outputMsg.Robotiq3FGripper_robot_output()
         self._mode = np.uint8(1)
 
     @property
