@@ -1,0 +1,10 @@
+$(arg prefix)hand_finger_1_tip_sensor:
+  frame_id: $(arg prefix)finger_1_link_3
+  id_range: [0, 6]
+  postions:
+    0: {x: 0, y: 0, z: 0}
+    1: {x: 0, y: 0, z: 0}
+    2: {x: 0, y: 0, z: 0}
+    3: {x: 0, y: 0, z: 0}
+    4: {x: 0, y: 0, z: 0}
+    5: {x: 0, y: 0, z: 0}
