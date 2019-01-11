@@ -1,0 +1,9 @@
+ <launch>
+
+   <!-- customize logging config -->
+  <env name="ROSCONSOLE_CONFIG_FILE"
+       value="$(find willbot_bringup)/config/logging_rosconsole.conf"/>
+  <env name="ROS_PYTHON_LOG_CONFIG_FILE"
+       value="$(find willbot_bringup)/config/logging_python.conf"/>
+
+</launch>
