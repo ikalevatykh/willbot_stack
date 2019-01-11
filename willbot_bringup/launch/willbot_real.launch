@@ -15,6 +15,7 @@
   <arg name="arm_name" default="arm" />
 
   <arg name="ur_limited" default="false"/>
+  <arg name="init_gripper" default="true" />
 
   <!-- customize logging settings -->
   <include file="$(find willbot_bringup)/launch/customize_log.launch" />
@@ -34,6 +35,7 @@
   <include file="$(find willbot_bringup)/launch/gripper_ros_control.launch">
     <arg name="gripper_ip" value="$(arg gripper_ip)"/>
     <arg name="gripper_name" default="$(arg gripper_name)" />
+    <arg name="init_gripper" default="$(arg init_gripper)" />
   </include>
 
   <!-- We do not have a robot connected, so publish fake joint states -->

@@ -11,7 +11,7 @@
   <arg name="prefix" default="hand_" />
   <arg name="gripper_ip" default="192.168.1.11" />
   <arg name="gripper_name" default="gripper" />
-  <arg name="gripper_init" default="True" /> 
+  <arg name="init_gripper" default="true" />
 
   <!-- Load hardware interface -->
   <node name="$(arg gripper_name)" pkg="robotiq_3f_gripper_control" type="robotiq_3f_gripper_modbus_node" output="screen">
@@ -33,6 +33,11 @@
     <!--node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
       output="screen" args="load $(arg prefix)trajectory_controller" /-->
 
+  </group>
+
+  <!--  initialize gripper if needed -->
+  <group if="$(arg init_gripper)">
+    <node pkg="willbot_bringup" type="init_gripper.sh" name="init_gripper" />
   </group>
 
 </launch>
