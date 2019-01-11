@@ -11,21 +11,28 @@
   <arg name="prefix" default="hand_" />
   <arg name="gripper_ip" default="192.168.1.11" />
   <arg name="gripper_name" default="gripper" />
+  <arg name="gripper_init" default="True" /> 
 
   <!-- Load hardware interface -->
   <node name="$(arg gripper_name)" pkg="robotiq_3f_gripper_control" type="robotiq_3f_gripper_modbus_node" output="screen">
     <param name="ip_address" value="$(arg gripper_ip)" />
     <param name="prefix" value="$(arg prefix)" />
     <param name="hw_name" value="$(arg gripper_name)" />
-
-    <remap from="/$(arg gripper_name)/joint_states" to="/joint_states" />
   </node>
 
   <group ns="$(arg gripper_name)">
+
     <!-- load controller settings -->  
     <rosparam file="$(find willbot_bringup)/config/gripper_controllers.yaml" command="load"/>
+
     <!-- spawn controller manager -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
         args="$(arg prefix)joint_state_controller $(arg prefix)gripper_controller" />
+
+    <!-- load other controller -->
+    <!--node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
+      output="screen" args="load $(arg prefix)trajectory_controller" /-->
+
   </group>
+
 </launch>

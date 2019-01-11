@@ -47,12 +47,18 @@
     </group_state>
     <group_state name="open" group="gripper">
         <joint name="hand_finger_middle_joint_1" value="0.0495" />
+        <joint name="hand_finger_1_joint_1" value="0.0495" />
+        <joint name="hand_finger_2_joint_1" value="0.0495" />
     </group_state>
     <group_state name="half_open" group="gripper">
         <joint name="hand_finger_middle_joint_1" value="0.22" />
+        <joint name="hand_finger_1_joint_1" value="0.22" />
+        <joint name="hand_finger_2_joint_1" value="0.22" />
     </group_state>
     <group_state name="close" group="gripper">
         <joint name="hand_finger_middle_joint_1" value="1.2218" />
+        <joint name="hand_finger_1_joint_1" value="1.2218" />
+        <joint name="hand_finger_2_joint_1" value="1.2218" />
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="tool" group="gripper" parent_group="manipulator" />
