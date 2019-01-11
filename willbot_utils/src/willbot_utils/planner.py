@@ -78,9 +78,6 @@ class CartesianPlanner(object):
         dw = PyKDL.Frame(PyKDL.Rotation(), PyKDL.Vector())
         dw = self._update(dw, pos, orn)
         w = self._points[-1] * dw
-
-        print(w.M)
-
         self._points.append(w)
 
     def move_origin(self, origin, pos=None, orn=None):
@@ -91,8 +88,6 @@ class CartesianPlanner(object):
 
         dw = PyKDL.Frame(PyKDL.Rotation(), PyKDL.Vector(-x, -y, -z))
         w = w * dw
-
-        print(w.p)
 
         self._points.append(w)
 

@@ -8,12 +8,11 @@ import numpy as np
 import rospy
 
 from agent_client import AgentClient
-from hand import RobotiqHand
-from kinect import Kinect
-from planner import CartesianPlanner
-from remote_agent import RemoteAgent
-from scene import StandardScene
-from record import Recorder
+from willbot_utils.hand import RobotiqHand
+from willbot_utils.kinect import Kinect
+from willbot_utils.planner import CartesianPlanner
+from willbot_utils.scene import StandardScene
+from willbot_utils.record import Recorder
 
 
 class AgentControllerNode(object):

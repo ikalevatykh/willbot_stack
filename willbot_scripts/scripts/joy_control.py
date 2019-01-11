@@ -8,10 +8,10 @@ import moveit_commander
 import numpy as np
 import rospy
 
-from joystick import Joystick
-from scene import StandardScene
-from velocity_controller import VelocityController, ControllerException
-from hand import RobotiqHand
+from willbot_utils.joystick import Joystick
+from willbot_utils.scene import StandardScene
+from willbot_utils.velocity_controller import VelocityController, ControllerException
+from willbot_utils.hand import RobotiqHand
 
 
 class JoyControllerNode(object):
@@ -75,16 +75,10 @@ class JoyControllerNode(object):
 
 def main():
     rospy.init_node('joy_controller', anonymous=True)
-    moveit_commander.roscpp_initialize(sys.argv)
     try:
         JoyControllerNode()
     except rospy.ROSInterruptException:
         pass
-    except Exception as e:
-        print(e)
-    finally:
-        moveit_commander.roscpp_shutdown()
-        moveit_commander.os._exit(0)
 
 
 if __name__ == '__main__':

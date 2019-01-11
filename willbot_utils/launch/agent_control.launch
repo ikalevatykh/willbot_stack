@@ -1,0 +1,24 @@
+<!--
+rosrun willbot_scripts agent_control.py _auto:=True _count:=1 _seed:=1000 _epth_conversion:=1 _agent_port:=9999 _env:=UR5-PickEnv-v0 _net_path:=/sequoia/data2/rstrudel/nets_real/pick_monocam_1000_res18 _arch:=resnet18 _epoch:=8
+-->
+<launch>
+    <node pkg="willbot_scripts" type="agent_control.py" name="agent_control" respawn="false" output="screen">
+        <param name="env" value="UR5-PickEnv-v0" />
+        <param name="agent_port" value="9999" />
+        <param name="auto" value="True" />
+        <param name="seed" value="1060" />
+        <param name="count" value="1" />
+
+        <!-- depth conversion: 0 - 128 levels, 1 - 255 levels, 2 - +white background, 3 - +fillin -->
+        <param name="depth_conversion" value="2" />
+        <param name="velocity_scale" value="4.0" />
+
+        <param name="net_path" value="/sequoia/data2/rstrudel/nets_exp/pick_real_gripce_200" />
+        <param name="arch" value="resnet18" />
+        <param name="epoch" value="80" />
+        <param name="timesteps" value="3" />
+
+        <param name="experiment_path" value="/media/igor/384E90014E8FB6623/experiments/pick_real_gripce_200.epoch_80" />
+        <param name="email" value="kalevatykh.work@gmail.com" />
+    </node>
+</launch>
