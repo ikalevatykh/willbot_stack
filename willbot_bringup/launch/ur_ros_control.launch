@@ -10,10 +10,15 @@
   <arg name="min_payload"  default="0.0"/>
   <arg name="max_payload"  default="5.0"/>
   <arg name="prefix" default="" />  
-  <arg name="max_velocity" default="10.0"/> <!-- [rad/s] -->
+  <arg name="max_velocity" default="1.0"/> <!-- [rad/s] -->
+  <arg name="max_acceleration" default="0.05"/> <!-- [rad/s^2] -->
   <arg name="base_frame" default="$(arg prefix)base" />
   <arg name="tool_frame" default="$(arg prefix)tool0_controller" />
   <arg name="arm_name" default="arm" />
+
+  <arg name="servoj_time"  default="0.008"/>
+  <arg name="servoj_lookahead_time"  default="0.04"/>
+  <arg name="servoj_gain"  default="600"/>
 
   <group ns="$(arg arm_name)">
 
@@ -23,8 +28,11 @@
       <param name="min_payload" type="double" value="$(arg min_payload)"/>
       <param name="max_payload" type="double" value="$(arg max_payload)"/>
       <param name="max_velocity" type="double" value="$(arg max_velocity)"/>
+      <param name="max_acceleration" type="double" value="$(arg max_acceleration)"/>
       <param name="use_ros_control" type="bool" value="True"/>
-      <param name="servoj_gain" type="double" value="750" />
+      <param name="servoj_time" type="double" value="$(arg servoj_time)" />
+      <param name="servoj_lookahead_time" type="double" value="$(arg servoj_lookahead_time)" />
+      <param name="servoj_gain" type="double" value="$(arg servoj_gain)" />
       <param name="prefix" value="$(arg prefix)" />
       <param name="base_frame" type="str" value="$(arg base_frame)"/>
       <param name="tool_frame" type="str" value="$(arg tool_frame)"/>
