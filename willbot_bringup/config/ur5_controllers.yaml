@@ -36,12 +36,12 @@ pos_based_pos_traj_controller:
    constraints:
       goal_time: 0.6
       stopped_velocity_tolerance: 0.05
-      shoulder_pan_joint: {trajectory: 0.1, goal: 0.02}
-      shoulder_lift_joint: {trajectory: 0.1, goal: 0.02}
-      elbow_joint: {trajectory: 0.1, goal: 0.02}
-      wrist_1_joint: {trajectory: 0.1, goal: 0.02}
-      wrist_2_joint: {trajectory: 0.1, goal: 0.02}
-      wrist_3_joint: {trajectory: 0.1, goal: 0.02}
+      shoulder_pan_joint: {trajectory: 0.1, goal: 0.01}
+      shoulder_lift_joint: {trajectory: 0.1, goal: 0.01}
+      elbow_joint: {trajectory: 0.1, goal: 0.01}
+      wrist_1_joint: {trajectory: 0.1, goal: 0.01}
+      wrist_2_joint: {trajectory: 0.1, goal: 0.01}
+      wrist_3_joint: {trajectory: 0.1, goal: 0.01}
    stop_trajectory_duration: 0.2
    state_publish_rate:  125
    action_monitor_rate: 60
