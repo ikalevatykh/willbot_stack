@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+  Kinect 2 launch. 
+
+  Usage:
+    kinect2_bringup.launch param:=<value>
+-->
+<launch>
+
+  <arg name="fps_limit" default="20" />
+  <arg name="depth_method" default="cuda" />
+  <arg name="reg_method" default="opencl" />
+  <arg name="max_depth" default="3.0"/>
+  <arg name="min_depth" default="0.5"/>
+  <arg name="bilateral_filter"  default="false"/>
+  <arg name="edge_aware_filter" default="false"/>   
+  <arg name="publish_tf" default="true" />
+  <arg name="base_name_tf" default="camera" />
+
+  <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
+    <arg name="fps_limit" value="$(arg fps_limit)"/>
+    <arg name="depth_method" value="$(arg depth_method)"/>
+    <arg name="reg_method" value="$(arg reg_method)"/>
+    <arg name="publish_tf" value="$(arg publish_tf)"/>
+    <arg name="base_name_tf" value="$(arg base_name_tf)"/>    
+    <arg name="calib_path" value="$(find kinect2_bridge)/data/"/>
+  </include>
+
+  <!-- static transform to camera -->
+  <!--node name="" pkg="tf" type="static_transform_publisher" respawn="true" output="screen"
+      args="1.37832, -0.0119859, 0.68708, -0.23053357693906318, 0.010968847229148588, 0.9729818496425293, -0.006346224101550414  world camera_link 100" /-->
+
+</launch>
