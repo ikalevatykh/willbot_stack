@@ -1,73 +1,70 @@
-import numpy as np
 import rospy
-from robotiq_3f_gripper_control.msg import _Robotiq3FGripper_robot_input  as inputMsg
-from robotiq_3f_gripper_control.msg import _Robotiq3FGripper_robot_output as outputMsg
+import moveit_commander
+import dynamic_reconfigure.client
 
 
-class RobotiqHand():
+class RobotiqHand(object):
     def __init__(self):
-        self._status_msg = None
-        self._in_motion = False
-        self._is_object_held = False
-        self._position = 0
+        self._open_position = 0.0
+        self._close_position = 0.6
 
-        def status_cb(status):
-            self._status_msg = status
-            self._in_motion = (status.gSTA == 0)
-            self._is_object_held = (status.gSTA == 1 or status.gSTA == 2)
-            self._position = status.gPOA
-
-        msg_type = inputMsg.Robotiq3FGripper_robot_input
-        rospy.Subscriber("Robotiq3FGripperRobotInput", msg_type, status_cb)
-        while self._status_msg is None:
-            rospy.sleep(0.1)
-
-        msg_type = outputMsg.Robotiq3FGripper_robot_output
-        self.pub = rospy.Publisher('Robotiq3FGripperRobotOutput', msg_type, queue_size=10)
-        self.command = outputMsg.Robotiq3FGripper_robot_output()
-        self._mode = np.uint8(1)
+        self._gripper = moveit_commander.MoveGroupCommander("gripper")
+        self._client = dynamic_reconfigure.client.Client("gripper", timeout=5)
+        self._config = self._client.get_configuration(timeout=5)
 
     @property
-    def mode(self):
-        return self._mode
+    def target_mode(self):
+        return self._config['mode']
 
-    @mode.setter
-    def mode(self, value):
-        self._mode = value
+    @target_mode.setter
+    def target_mode(self, value):
+        self._config['mode'] = value
+        self._client.update_configuration(self._config)
+
+    @property
+    def target_velocity(self):
+        return self._config['velocity']
+
+    @target_velocity.setter
+    def target_velocity(self, value):
+        self._config['velocity'] = value
+        self._client.update_configuration(self._config)
+
+    @property
+    def target_effort(self):
+        return self._config['force']
+
+    @target_effort.setter
+    def target_effort(self, value):
+        self._config['force'] = value
+        self._client.update_configuration(self._config)
 
     @property
     def position(self):
-        return self._position
+        joints = self._gripper.get_current_joint_values()
+        return joints[0]
 
     @property
     def is_object_held(self):
-        return self._is_object_held
+        return self.position < 0.6
 
-    def move(self, position):
-        self.command.rACT = 1
-        self.command.rMOD = self._mode
-        self.command.rGTO = 1
-        self.command.rATR = 0
-        self.command.rPRA = position
-        self.command.rSPA = 255
-        self.command.rFRA = 150
-        self.pub.publish(self.command)
+    def move(self, position, wait=True):
+        self._gripper.set_start_state_to_current_state()
+        self._gripper.set_joint_value_target({
+            'hand_finger_middle_joint_1':
+            position,
+            'hand_finger_1_joint_1':
+            position,
+            'hand_finger_2_joint_1':
+            position
+        })
+        return self._gripper.go(wait=wait)
 
-    def open(self, wait=False):
-        self.move(0)
-        if wait:
-            self.wait()
+    def open(self, wait=True):
+        return self.move(self._open_position, wait)
 
-    def close(self, wait=False):
-        self.move(255)
-        if wait:
-            self.wait()
+    def close(self, wait=True):
+        return self.move(self._close_position, wait)
 
-    def wait(self):
-        while not rospy.is_shutdown():
-            rospy.sleep(0.1)
-            if not self._in_motion:
-                rospy.sleep(1.0)
-                break
-
-
+    def stop(self):
+        self._gripper.stop()
