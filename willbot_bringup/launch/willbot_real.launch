@@ -7,7 +7,7 @@
     willbot_real.launch robot_ip:=<value> gripper_ip:=<value>
 -->
 <launch>
-  
+
   <arg name="robot_ip" default="192.168.1.20"/>
   <arg name="gripper_ip" default="192.168.1.11"/>
 
@@ -52,5 +52,8 @@
 
   <!-- kinect -->
   <include file="$(find willbot_bringup)/launch/kinect_bringup.launch" />
+
+  <!-- kinect 2 -->
+  <!-- <include file="$(find willbot_bringup)/launch/kinect2_bringup.launch" />   -->
 
 </launch>
