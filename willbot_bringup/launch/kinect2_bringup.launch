@@ -7,7 +7,7 @@
 -->
 <launch>
 
-  <arg name="fps_limit" default="20" />
+  <arg name="fps_limit" default="-1.0" />
   <arg name="depth_method" default="cuda" />
   <arg name="reg_method" default="opencl" />
   <arg name="max_depth" default="3.0"/>
