@@ -5,7 +5,7 @@ import dynamic_reconfigure.client
 
 class RobotiqHand(object):
     def __init__(self):
-        self._open_position = 0.0
+        self._open_position = 0.22
         self._close_position = 0.6
 
         self._gripper = moveit_commander.MoveGroupCommander("gripper")
@@ -13,11 +13,11 @@ class RobotiqHand(object):
         self._config = self._client.get_configuration(timeout=5)
 
     @property
-    def target_mode(self):
+    def mode(self):
         return self._config['mode']
 
-    @target_mode.setter
-    def target_mode(self, value):
+    @mode.setter
+    def mode(self, value):
         self._config['mode'] = value
         self._client.update_configuration(self._config)
 
