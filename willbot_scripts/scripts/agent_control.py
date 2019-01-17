@@ -11,7 +11,7 @@ import numpy as np
 import rospy
 
 from willbot_utils.hand import RobotiqHand
-from willbot_utils.kinect import Kinect
+from willbot_utils.kinect import KinectListener
 from willbot_utils.planner import CartesianPlanner
 from willbot_utils.scene import StandardScene
 from willbot_utils.velocity_controller import VelocityController, ControllerException
@@ -49,13 +49,11 @@ class AgentControllerNode(object):
         print('Connecting hand...')
         hand = RobotiqHand()
         hand.mode = 1
-        #hand.open(wait=True)
         self._hand = hand
         print('OK')
 
         print('Connecting kinect...')
-        depth_conv = rospy.get_param('~depth_conversion', 0)
-        cam = Kinect(depth=True, depth_conv=depth_conv)
+        cam = KinectListener() # kinect v1 by default
         self._cam = cam
         print('OK')
 
@@ -182,7 +180,7 @@ class AgentControllerNode(object):
                 t0 = rospy.get_rostime()
                 rate = rospy.Rate(10)
                 for i in range(100):
-                    depth, depth_t = cam.depth_uint8
+                    depth_t, depth = cam.depth_u8(with_time=True)
                     obs = {
                         'depth': depth,
                         'timestamp': depth_t.to_sec()
