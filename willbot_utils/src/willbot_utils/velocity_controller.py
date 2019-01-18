@@ -34,7 +34,7 @@ class VelocityController(object):
         self._kin = VelocityController.KIN_CACHE
         self._joint_names = self._kin.get_joint_names()
 
-        cmd_topic = '/pos_based_pos_traj_controller/command'
+        cmd_topic = '/arm/pos_based_pos_traj_controller/command'
         self._publisher = rospy.Publisher(
             cmd_topic, JointTrajectory, queue_size=10)
 
@@ -79,8 +79,8 @@ class VelocityController(object):
             raise ControllerException('IK solution not continuous')
 
         if check:
-            points = [pm.toMsg(w) for w in [X0, X1, X2]]
-            (_, frac) = self._group.compute_cartesian_path(points, 0.01, 0.0)
+            points = [pm.toMsg(w) for w in [X1, X2]]
+            (_, frac) = self._group.compute_cartesian_path(points, 0.01, 5.0)
             if frac < 1.0:
                 raise ControllerException('Moveit planner failed')
 
