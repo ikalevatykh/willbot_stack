@@ -1,0 +1,14 @@
+# Empty request
+
+---
+
+# Task specific observation (in json format)
+string observation
+
+# Episode id
+int32 episode_id
+
+---
+
+# The internal state that the reset action currently is in
+string state

@@ -1,0 +1,6 @@
+# Sets the seed for this env's random number generator(s)
+UInt64 seed
+
+---
+
+UInt64[] seeds

@@ -1,0 +1,24 @@
+# Episode id, have to be the same as reset action returns
+int32 episode_id
+
+# An action provided by the environment (in json format)
+string action
+
+---
+
+# Task specific observation (in json format)
+string observation
+
+# Amount of reward returned after previous action
+float reward
+
+# Whether the episode has ended
+bool done
+
+# Contains auxiliary diagnostic information (in json format)
+string info
+
+---
+
+# The internal state that the reset action currently is in
+string state

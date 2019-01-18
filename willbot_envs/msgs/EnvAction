@@ -1,0 +1,39 @@
+# The header is used to specify the coordinate frame and the reference time for the trajectory durations
+Header header
+
+# Duration for velocity commands
+duration time_from_start
+
+# The type of command produced for arm execution
+int32 arm_command
+
+int32 ArmCommandEmpty = 0
+int32 ArmCommandJointsPosition = 1
+int32 ArmCommandJointsVelocity = 2
+int32 ArmCommandToolPosition = 3
+int32 ArmCommandToolVelocity = 4
+
+# Joint names and positions/velocities in the same order
+string[] joint_names
+float64[] joint_positions
+float64[] joint_velocities
+
+# The frame id of the tool frame
+string tool_frame_id
+
+# There can specify a transform for the target frame
+geometry_msgs/Transform tool_transform
+
+# There can be a velocity specified for the target frame
+geometry_msgs/Twist tool_velocity
+
+# The type of command produced for gripper execution
+int32 gripper_command
+
+int32 GripperCommandEmpty = 0
+int32 GripperCommandPosition = 1
+int32 GripperCommandVelocity = 2
+
+# Gripper position/velocity
+float64 gripper_position
+float64 gripper_velocity
