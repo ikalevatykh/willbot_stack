@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="worlds/empty.world"/>
+    <arg name="paused" value="false"/>
+  </include>
+
+  <!-- robot model -->
+  <include file="$(find willbot_description)/launch/willbot_upload.launch">
+    <arg name="limited" value="false"/>
+  </include>
+
+  <!-- spawn in gazebo -->
+  <!--node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -timeout 120" respawn="false" output="screen" /-->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model robot -timeout 120"  respawn="false" output="screen" />
+
+</launch>
