@@ -12,6 +12,16 @@ class RobotiqHand(object):
         self._client = dynamic_reconfigure.client.Client("gripper", timeout=5)
         self._config = self._client.get_configuration(timeout=5)
 
+        links = ['hand_palm']
+        for f in ['1', '2', 'middle']:
+            for l in ['0', '1', '2', '3']:
+                links.append('hand_finger_{}_link_{}'.format(f, l))
+        self._links = links        
+
+    @property
+    def links(self):
+        return self._links
+
     @property
     def mode(self):
         return self._config['mode']
@@ -68,3 +78,4 @@ class RobotiqHand(object):
 
     def stop(self):
         self._gripper.stop()
+

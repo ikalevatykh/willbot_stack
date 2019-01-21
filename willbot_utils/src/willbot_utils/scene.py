@@ -59,7 +59,7 @@ class StandardScene(object):
         self.send_colors() 
        
     def remove_world_object(self, name):
-        self._scene.remove_world_object(name) 
+        self._scene.remove_world_object(name)
         
 def main():
     import sys
