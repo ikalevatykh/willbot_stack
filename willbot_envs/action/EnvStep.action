@@ -10,7 +10,7 @@ string action
 string observation
 
 # Amount of reward returned after previous action
-float reward
+float32 reward
 
 # Whether the episode has ended
 bool done

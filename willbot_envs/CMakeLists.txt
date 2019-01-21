@@ -22,6 +22,12 @@ add_action_files(
   EnvStep.action
 )
 
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  actionlib_msgs
+)
+
 catkin_package(
   CATKIN_DEPENDS message_runtime std_msgs actionlib_msgs
 )

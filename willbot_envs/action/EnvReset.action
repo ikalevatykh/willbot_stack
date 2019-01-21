@@ -1,4 +1,9 @@
-# Empty request
+# Environment id
+string environment_id
+
+# The seed for this env's random number generator
+int32 seed
+int32 NO_SEED = -1
 
 ---
 
