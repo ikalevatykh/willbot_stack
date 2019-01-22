@@ -7,8 +7,11 @@ hand_joint_state_controller:
 hand_gripper_controller:
    type: position_controllers/GripperActionController
    joint: hand_finger_middle_joint_1
-   goal_tolerance: 0.1
-   stall_timeout: 2
+   action_monitor_rate: 20
+   goal_tolerance: 0.01
+   max_effort: 100
+   stall_velocity_threshold: 0.001
+   stall_timeout: 1.0  
 
 ## joint trajectory controller (for individual finger control)
 hand_trajectory_controller:
