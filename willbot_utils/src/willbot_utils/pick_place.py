@@ -5,8 +5,25 @@ class TopPickPlacePlan(object):
         self._arm = arm
         self._hand = hand
         self._object_name = object_name
+        self._pick_position = None
+        self._place_position = None
 
     def pick(self, pick_pos, pick_orn=None):
+        self._pick_position = (pick_pos, pick_orn)
+
+    def place(self, place_pos, place_orn=None):
+        self._place_position = (place_pos, place_orn)
+
+    def execute(self):
+        if self._pick_position is not None:
+            if not self._pick(*self._pick_position):
+                return False
+        if self._place_position is not None:
+            if not self._place(*self._place_position):
+                return False
+        return True
+
+    def _pick(self, pick_pos, pick_orn=None):
         upper_pos = [pick_pos[0], pick_pos[1], pick_pos[2] + 0.1]
         self._hand.open()
         plan = self._arm.cartesian()
@@ -23,7 +40,7 @@ class TopPickPlacePlan(object):
         plan.move(upper_pos, pick_orn)
         return plan.execute()
 
-    def place(self, place_pos, place_orn=None):
+    def _place(self, place_pos, place_orn=None):
         upper_pos = [place_pos[0], place_pos[1], place_pos[2] + 0.1]
         plan = self._arm.cartesian()
         plan.move(upper_pos, place_orn)
