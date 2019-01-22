@@ -60,6 +60,18 @@
         <joint name="hand_finger_1_joint_1" value="1.2218" />
         <joint name="hand_finger_2_joint_1" value="1.2218" />
     </group_state>
+    <group_state name="pick_open" group="gripper">
+        <joint name="hand_palm_finger_1_joint" value="-0.11" />
+        <joint name="hand_finger_middle_joint_1" value="0.0495" />
+        <joint name="hand_finger_1_joint_1" value="0.0495" />
+        <joint name="hand_finger_2_joint_1" value="0.0495" />
+    </group_state>
+    <group_state name="pick_close" group="gripper">
+        <joint name="hand_palm_finger_1_joint" value="-0.11" />
+        <joint name="hand_finger_middle_joint_1" value="0.916" />
+        <joint name="hand_finger_1_joint_1" value="0.916" />
+        <joint name="hand_finger_2_joint_1" value="0.916" />
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="tool" group="gripper" parent_group="manipulator" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
