@@ -1,0 +1,8 @@
+<launch>
+    <arg name="env_name" default="" />
+
+    <node pkg="willbot_envs" type="env_server_node.py" name="willbot_env" respawn="true" output="screen">
+        <param name="env_name" value="$(arg env_name)" />        
+    </node>
+    
+</launch>

@@ -1,39 +1,35 @@
-#!/usr/bin/env python
-from __future__ import print_function
-
-import sys
-import json
-import numpy as np
-
 import rospy
 import actionlib
 
-import willbot_envs.msg
+from willbot_envs.msg import EnvResetAction, EnvResetResult
+from willbot_envs.msg import EnvStepAction, EnvStepResult
 
-from willbot_pick_env import WillbotPickEnv
+from willbot_envs.utils import loads, dumps
+from willbot_envs.envs.pick_env import PickEnv
 
 
-class EnvironmentNode(object):
+class EnvironmentServer(object):
     def __init__(self):
-        self._environment_id = 'UR5-PickEnv-v0' #TODO: choose by name
-        self._environment = WillbotPickEnv()
+        self._environment_id = 'UR5-PickEnv-v0'  # TODO: choose by name
+        self._environment = PickEnv()
         self._episode_id = 0
 
         self._reset_server = actionlib.SimpleActionServer(
-            '/willbot_env/reset',  willbot_envs.msg.EnvResetAction,
+            '/willbot_env/reset', EnvResetAction,
             execute_cb=self.reset_cb, auto_start=False)
-        self._reset_server.start()
 
         self._step_server = actionlib.SimpleActionServer(
-            '/willbot_env/step',  willbot_envs.msg.EnvStepAction,
+            '/willbot_env/step', EnvStepAction,
             execute_cb=self.step_cb, auto_start=False)
+
+        self._reset_server.start()            
         self._step_server.start()
 
         rospy.loginfo('Environment ready')
 
     def reset_cb(self, goal):
         try:
-            rospy.loginfo('reset')
+            rospy.logdebug('reset')
 
             if goal.environment_id != self._environment_id:
                 raise RuntimeError(
@@ -47,18 +43,18 @@ class EnvironmentNode(object):
 
             observation = self._environment.reset()
 
-            result = willbot_envs.msg.EnvResetResult(
+            result = EnvResetResult(
                 episode_id=self._episode_id,
-                observation=json.dumps(observation)
+                observation=dumps(observation)
             )
             self._reset_server.set_succeeded(result)
         except Exception as e:
-            print(e)
+            rospy.logerr('Reset exception: %s', e)
             self._reset_server.set_aborted(text=e.message)
 
     def step_cb(self, goal):
         try:
-            rospy.loginfo('step %s', goal.action)
+            rospy.logdebug('step %s', goal.action)
 
             if self._environment is None:
                 raise RuntimeError(
@@ -68,29 +64,16 @@ class EnvironmentNode(object):
                 raise RuntimeError(
                     'Wrong episode id, only one client can be connected')
 
-            action = json.loads(goal.action)
+            action = loads(goal.action)
             obs, reward, done, info = self._environment.step(action)
 
-            result = willbot_envs.msg.EnvStepResult(
-                observation=json.dumps(obs),
+            result = EnvStepResult(
+                observation=dumps(obs),
                 reward=reward,
                 done=done,
-                info=json.dumps(info)
+                info=dumps(info)
             )
-            self._reset_server.set_succeeded(result)
+            self._step_server.set_succeeded(result)
         except Exception as e:
-            self._reset_server.set_aborted(text=e.message)
-
-
-def main():
-    rospy.myargv(argv=sys.argv)
-    rospy.init_node('willbot_env', anonymous=False)
-    try:
-        node = EnvironmentNode()
-        rospy.spin()
-    except rospy.ROSInterruptException:
-        pass
-
-
-if __name__ == '__main__':
-    main()
+            rospy.logerr('Step exception: %s', e)
+            self._step_server.set_aborted(text=e.message)

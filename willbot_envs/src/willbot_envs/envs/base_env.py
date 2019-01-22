@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
-
 import numpy as np
+import rospy
+
 from gym.utils import seeding
 
 from willbot_utils.arm import UR5
@@ -14,7 +13,7 @@ class WillbotEnv(object):
         self._np_random = None
         self._seed = 0
 
-        print('Connecting arm ...')
+        rospy.loginfo('Connecting arm ...')
         arm = UR5()
         arm.set_planner_id("RRTConnectkConfigDefault")
         # arm.set_max_velocity_scaling_factor(0.5)
@@ -23,20 +22,20 @@ class WillbotEnv(object):
         workspace = np.array([[0.3, -0.20, 0.050], [0.7, 0.20, 0.250]])
         arm.set_workspace(workspace.flatten())
         self._workspace = workspace
-        print('- Arm OK')
+        rospy.loginfo('- Arm OK')
 
-        print('Connecting hand ...')
+        rospy.loginfo('Connecting hand ...')
         hand = RobotiqHand()
         hand.mode = 1
         hand.target_velocity = 5
         hand.target_effort = 5
         self._hand = hand
-        print('- Hand OK')
+        rospy.loginfo('- Hand OK')
 
-        print('Preparing scene ...')
+        rospy.loginfo('Preparing scene ...')
         self._scene = StandardScene()
         self._arm.set_support_surface_name('rubber')
-        print('- Scene OK')
+        rospy.loginfo('- Scene OK')
 
     def reset(self):
         """Resets the state of the environment and returns an initial observation."""
@@ -48,15 +47,17 @@ class WillbotEnv(object):
         if 'tool_position' in action:
             pos = action.get('tool_position')
             orn = action.get('tool_orientation', None)
-            self._arm.cartesian().move(pos, orn).execute(wait=True)
+            plan = self._arm.cartesian()
+            plan.move(pos, orn)
+            plan.execute(wait=True)
         elif 'joint_position' in action:
             joints = action.get('joint_position')
             self._arm.go(joints, wait=True)
         elif 'linear_velocity' in action:
-            #'angular_velocity'
+            # 'angular_velocity'
             raise NotImplementedError
         elif 'joint_velocity' in action:
-            raise NotImplementedError                      
+            raise NotImplementedError
 
         if 'gripper_open' in action:
             self._hand.open(wait=True)
