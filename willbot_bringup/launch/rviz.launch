@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  Popup rviz GUI interface.
+
+  Usage:
+    rviz.launch config:=true
+-->
+<launch>
+
+  <arg name="config" default="true"/>
+
+  <include file="$(find willbot_moveit_config)/launch/moveit_rviz.launch">
+    <arg name="config" value="$(arg config)"/>
+  </include>
+
+</launch>
