@@ -47,7 +47,8 @@ def process_depth(depth, kn, kf):
     depth_cropped = depth_scaled[:,62:-92]
     img_cropped = PIL.Image.fromarray(depth_cropped)
     img_cropped = img_cropped.resize((224, 224))
-    return np.array(img_cropped)
+    return img_cropped
+    #return np.array(img_cropped)
 
 
 db_map_size = 1099511627776  # 1TB
@@ -206,10 +207,13 @@ for bag_name in tqdm(path.glob('*.bag')):
             # img_depth = depth[i].data
             img_depth = np.array(PIL.Image.frombytes('F', (640, 480), depth[i].data, 'raw', 'F;16'))
             img_depth = process_depth(img_depth, 0.3, 1.5)
+            img_depth_buf = BytesIO()
+            img_depth.save(img_depth_buf, format='JPEG', quality=100)
+
 
             dic_entry_lmdb = dict(
                 #rgb0=img_rgb,
-                depth0=img_depth
+                depth0=img_depth_buf.getvalue()
             )
 
             dic_entry_pkl = dict(
@@ -218,7 +222,7 @@ for bag_name in tqdm(path.glob('*.bag')):
             )
 
             # Index of data
-            ind = 'S{:06}/T{:06}'.format(seed-1, i)
+            ind = 'S{:06}/T{:06}'.format(seed, i)
 
             # Write the frames to LMDB
             dic_buf = BytesIO()
