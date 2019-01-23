@@ -13,15 +13,9 @@
 
   <arg name="setup" default="paris"/>
 
-  <group if="$(eval arg('setup') == 'paris')">
-    <arg name="robot_ip" default="192.168.1.20"/>
-    <arg name="gripper_ip" default="192.168.1.11"/>
-  </group>
-
-  <group if="$(eval arg('setup') == 'grenoble')">
-    <arg name="robot_ip" default="192.168.1.1"/>
-    <arg name="gripper_ip" default="192.168.1.11"/>
-  </group>  
+  <arg name="robot_ip" default="192.168.1.20" if="$(eval setup == 'paris')"/>
+  <arg name="robot_ip" default="192.168.1.1" if="$(eval setup == 'grenoble')"/>  
+  <arg name="gripper_ip" default="192.168.1.11"/>
 
   <arg name="gripper_name" default="gripper" />
   <arg name="arm_name" default="arm" />
@@ -29,7 +23,7 @@
   <arg name="ur_limited" default="false"/>
   <arg name="init_gripper" default="true" />
 
-  <arg name="camera" default="none">
+  <arg name="camera" default="none" />
 
   <!-- customize logging settings -->
   <include file="$(find willbot_bringup)/launch/customize_log.launch" />
