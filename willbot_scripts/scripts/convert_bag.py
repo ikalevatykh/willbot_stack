@@ -5,6 +5,7 @@ import pickle as pkl
 from io import BytesIO
 from pathlib import Path
 
+import PIL
 import lmdb
 from scipy import interpolate
 from scipy import signal
@@ -34,6 +35,19 @@ y0, y1 = -0.2, 0.2
 def forward_kin(q):
     pos, orn = arm._kinematics.forward(q)
     return pos
+
+
+def process_depth(depth, kn, kf):
+    depth /= 1000
+    depth[depth==0] = kf
+    depth[depth > kf] = kf
+    depth_scaled = depth/(kf - kn) - kn/(kf-kn)
+    depth_scaled = np.clip(depth_scaled,0.,1.)*255
+    depth_scaled = depth_scaled.astype(np.uint8)
+    depth_cropped = depth_scaled[:,62:-92]
+    img_cropped = PIL.Image.fromarray(depth_cropped)
+    img_cropped = img_cropped.resize((224, 224))
+    return np.array(img_cropped)
 
 
 db_map_size = 1099511627776  # 1TB
@@ -189,10 +203,12 @@ for bag_name in tqdm(path.glob('*.bag')):
             )
 
             img_rgb = rgb[i].data
-            img_depth = depth[i].data
+            # img_depth = depth[i].data
+            img_depth = np.array(PIL.Image.frombytes('F', (640, 480), depth[i].data, 'raw', 'F;16'))
+            img_depth = process_depth(img_depth, 0.3, 1.5)
 
             dic_entry_lmdb = dict(
-                rgb0=img_rgb,
+                #rgb0=img_rgb,
                 depth0=img_depth
             )
 
@@ -202,7 +218,7 @@ for bag_name in tqdm(path.glob('*.bag')):
             )
 
             # Index of data
-            ind = 'S{:06}/T{:06}'.format(seed, i)
+            ind = 'S{:06}/T{:06}'.format(seed-1, i)
 
             # Write the frames to LMDB
             dic_buf = BytesIO()

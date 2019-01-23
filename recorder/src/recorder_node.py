@@ -17,7 +17,9 @@ from robotiq_s_model_control.msg import _SModel_robot_input as SModelInputMsg
 
 import PIL.Image
 import StringIO
+import time
 import numpy as np
+import pickle as pkl
 
 from recorder.srv import *
 
@@ -129,33 +131,47 @@ class SignalCollector(object):
 
 		self._rgb = dest_msg
 
-	def _depth_cb(self, msg):			
-		# Resize and compress image
-		src = PIL.Image.frombytes("F", (msg.width, msg.height), msg.data, "raw", "F;16").resize((224, 224), PIL.Image.ANTIALIAS)
+	def _depth_cb(self, msg):
+                self._depth = msg
+                return
 
+		pil_img = PIL.Image.frombytes("F", (msg.height, msg.width), msg.data, "raw", "F;16")
+		arr = np.array(pil_img).reshape(pil_img.size[0], pil_img.size[1])
+                arr /= 1000 # realsense writes everything in mm
+                kn = 0.5
+                kf = 1.8
+                arr[arr==0] = kf
+                arr[arr > 1.8] = kf
+                arr = arr/(kf - kn) - kn/(kf-kn)
+                arr = np.clip(arr,0.,1.)*255
+		# self._depth = arr
+                '''
+                original image processing
+		# Resize and compress image
+                pil_img = pil_img.resize((224, 224), PIL.Image.ANTIALIAS)
 		arr = np.array(src).reshape(src.size[0], src.size[1])
 		arr = np.clip(arr, 0, 2000)
 		arr -= np.min(arr)
 		arr *= 255 / np.max(arr)
+                '''
 
 		src = PIL.Image.fromarray(arr.astype("uint8"))
-
 		dest = StringIO.StringIO()
-		src.save(dest, format="JPEG")
+		src.save(dest, format="PNG")
 		
 		dest_msg = CompressedImage()
-		dest_msg.header.seq = msg.header.seq		
+		dest_msg.header.seq = msg.header.seq
 		dest_msg.header.stamp.secs = msg.header.stamp.secs
 		dest_msg.header.stamp.nsecs = msg.header.stamp.nsecs
 		dest_msg.header.frame_id = msg.header.frame_id
-		dest_msg.format = "JPEG"
+		dest_msg.format = "PNG"
 		dest_msg.data = dest.getvalue()
 		### End of compression and resizing
 
 		self._depth = dest_msg
 
 	def _depth_raw_cb(self, msg):			
-		self._depth_raw = msg
+		self._depth = dest_msg
 
 class Bag(object):
 	def __init__(self, signals, file_name, frequency = 10):
