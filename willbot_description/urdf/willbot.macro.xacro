@@ -14,82 +14,61 @@ there are multiple arms then a prefix followed by an "_" is needed.
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
   <!-- ur5 -->
   <xacro:include filename="$(find ur_description)/urdf/ur5.urdf.xacro" />
+  <!-- adapter -->
+  <xacro:include filename="$(find willbot_description)/urdf/adapter.paris.macro.xacro" />
+  <xacro:include filename="$(find willbot_description)/urdf/adapter.grenoble.macro.xacro" />  
 
-
-  <xacro:macro name="willbot" params="prefix">
+  <xacro:macro name="willbot" params="prefix setup">
 
     <!-- arm -->
-    <!-- be careful, shoulder_pan has limits -2pi..0 -->
-    <xacro:ur5_robot prefix="${prefix}" joint_limited="true"
-      shoulder_pan_lower_limit="${-2*pi}" shoulder_pan_upper_limit="${0}"
-      shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${pi}"
-      elbow_joint_lower_limit="${-2*pi}" elbow_joint_upper_limit="${0}"
-      wrist_1_lower_limit="${-2*pi}" wrist_1_upper_limit="${0}"
-      wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
-      wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}" />
+    <!-- be careful with non-stardart joint limits -->
+    <xacro:if value="${setup == 'paris'}">
+      <xacro:ur5_robot prefix="${prefix}" joint_limited="true"
+        shoulder_pan_lower_limit="${-2*pi}" shoulder_pan_upper_limit="${0}"
+        shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${pi}"
+        elbow_joint_lower_limit="${-2*pi}" elbow_joint_upper_limit="${0}"
+        wrist_1_lower_limit="${-2*pi}" wrist_1_upper_limit="${0}"
+        wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
+        wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}" />
+    </xacro:if>
+
+    <xacro:if value="${setup == 'grenoble'}">
+      <xacro:ur5_robot prefix="${prefix}" joint_limited="true"
+        shoulder_pan_lower_limit="${-3*pi/2}" shoulder_pan_upper_limit="${pi/2}"
+        shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${pi}"
+        elbow_joint_lower_limit="${-2*pi}" elbow_joint_upper_limit="${0}"
+        wrist_1_lower_limit="${-pi}" wrist_1_upper_limit="${pi}"
+        wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
+        wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}" />
+    </xacro:if>
 
     <!-- hand -->
     <xacro:robotiq-3f-gripper_articulated prefix="${prefix}hand_"/>
 
     <!-- arm to hand adapter -->
-    <xacro:property name="adapter_radius" value="0.040" />
-    <xacro:property name="adapter_length" value="0.025" />
-    <xacro:property name="adapter_weight" value="0.100" />
+    <xacro:if value="${setup == 'paris'}">
+      <xacro:paris_adapter prefix="${prefix}"/>
+    </xacro:if>
 
-    <joint name="${prefix}tool0-adapter_fixed_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 ${-pi/4}"/>
-      <parent link="${prefix}tool0"/>
-      <child link="${prefix}adapter_link"/>
-    </joint>
-
-    <link name="${prefix}adapter_link">
-      <visual>
-        <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
-        <geometry>
-          <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
-        </geometry>
-        <material name="Grey">
-          <color rgba="0.2 0.2 0.2 1.0"/>
-        </material>
-      </visual>
-      <collision>
-        <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
-        <geometry>
-          <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
-        </geometry>
-      </collision>
-      <collision>
-        <origin xyz="0.055 0.0 0.035" rpy="0 0 0" />
-        <geometry>
-          <box size="0.11 0.09 0.07" />
-        </geometry>
-      </collision>
-      <xacro:cylinder_inertial radius="${adapter_radius}" length="${adapter_length}" mass="${adapter_weight}">
-        <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
-      </xacro:cylinder_inertial>
-    </link>
-
-    <joint name="${prefix}adapter-palm_fixed_joint" type="fixed">
-      <origin xyz="0 0 ${adapter_length+0.045}" rpy="${pi/2} 0 0"/>
-      <parent link="${prefix}adapter_link"/>
-      <child link="${prefix}hand_palm"/>
-    </joint>
+    <xacro:if value="${setup == 'grenoble'}">
+      <xacro:grenoble_adapter prefix="${prefix}"/>
+    </xacro:if>
 
     <!-- tool position -->
     <link name="${prefix}tool" />
 
-    <joint name="${prefix}adapter_link-tool_joint" type="fixed">
-      <origin rpy="0 0 ${-pi/4}" xyz="0 0 ${adapter_length+0.2}"/>
-      <parent link="${prefix}tool0"/>
+    <joint name="${prefix}hand_base-tool_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0.2"/>
+      <parent link="${prefix}hand_base"/>
       <child link="${prefix}tool"/>
     </joint>
 
     <!-- hand palm plane position -->
     <link name="${prefix}hand_palm_plane" />
 
-    <joint name="${prefix}adapter_link-hand_palm_plane" type="fixed">
-      <origin rpy="0 0 ${-pi/4}" xyz="0 0 ${adapter_length+0.095}"/>
-      <parent link="${prefix}tool0"/>
+    <joint name="${prefix}hand_base-hand_palm_plane" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0.05"/>
+      <parent link="${prefix}hand_base"/>
       <child link="${prefix}hand_palm_plane"/>
     </joint>
 

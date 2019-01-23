@@ -3,14 +3,32 @@
 
   <xacro:include filename="$(find willbot_description)/urdf/willbot.macro.xacro" />
 
-  <xacro:willbot prefix=""/>
- 	  
-  <link name="world" />
+  <xacro:arg name="setup" default=""/>
+  <xacro:arg name="prefix" default=""/>
 
-  <joint name="world_joint" type="fixed">
-	<parent link="world" />
-	<child link = "base_link" />
-	<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-  </joint> 
+  <xacro:property name="setup" value="$(arg setup)"/>
+  <xacro:property name="prefix" value="$(arg prefix)"/>  
+
+  <!-- robot -->
+  <xacro:willbot setup="${setup}" prefix="${prefix}"/>
+ 	  
+  <!-- connect to the world link -->
+  <link name="world"/>
+
+  <xacro:if value="${setup == 'paris'}">
+    <joint name="world_joint" type="fixed">
+      <parent link="world"/>
+      <child link = "base_link"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${setup == 'grenoble'}">
+    <joint name="world_joint" type="fixed">
+      <parent link="world"/>
+      <child link = "base_link"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${-pi/2}"/>
+    </joint>
+  </xacro:if>  
 
 </robot>
