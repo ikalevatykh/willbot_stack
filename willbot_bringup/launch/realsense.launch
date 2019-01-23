@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  Realsense launch. 
+-->
+<launch>
+
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+<!--
+    <arg name="enable_color" value="true"/>
+    <arg name="enable_depth" value="true"/>
+    <arg name="enable_pointcloud" value="true"/>
+    <arg name="enable_fisheye" value="false"/>
+    <arg name="enable_infra1" value="false"/>
+    <arg name="enable_infra2" value="false"/>
+    <arg name="enable_imu" value="false"/>
+-->
+  </include>
+
+</launch>

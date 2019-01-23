@@ -8,14 +8,14 @@
 -->
 <launch>
   
-    <!-- robot model -->
+  <arg name="setup" default="paris"/>
+
+  <!-- robot model -->
   <include file="$(find willbot_description)/launch/willbot_upload.launch">
-    <arg name="limited" value="true"/>
+    <arg name="setup" value="$(arg setup)"/>    
   </include>
 
-  
-    <!-- moveit -->
-    <include file="$(find willbot_moveit_config)/launch/willbot_moveit_planning_execution.launch">
-    </include>
+  <!-- moveit -->
+  <include file="$(find willbot_moveit_config)/launch/demo.launch" />
 
 </launch>

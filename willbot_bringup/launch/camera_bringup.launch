@@ -1,0 +1,20 @@
+ <launch>
+
+    <arg name="camera" />
+ 
+    <!-- kinect -->
+    <group if="$(eval arg('camera') == 'kinect')">
+        <include file="$(find willbot_bringup)/launch/kinect_bringup.launch" />
+    </group>
+
+    <!-- kinect 2 -->
+    <group if="$(eval arg('camera') == 'kinect2')">
+        <include file="$(find willbot_bringup)/launch/kinect2_bringup.launch" />
+    </group>  
+
+    <!-- realsense -->
+    <group if="$(eval arg('camera') == 'realsense')">
+        <include file="$(find willbot_bringup)/launch/realsense_bringup.launch" />
+    </group>
+
+</launch>
