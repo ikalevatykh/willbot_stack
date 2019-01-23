@@ -1,3 +1,5 @@
+import sys
+import traceback
 import rospy
 import actionlib
 
@@ -10,6 +12,8 @@ from willbot_envs.envs.pick_env import PickEnv
 
 class EnvironmentServer(object):
     def __init__(self):
+        self._debug = rospy.get_param('debug', default=False)
+
         self._environment_id = 'UR5-PickEnv-v0'  # TODO: choose by name
         self._environment = PickEnv()
         self._episode_id = 0
@@ -22,7 +26,7 @@ class EnvironmentServer(object):
             '/willbot_env/step', EnvStepAction,
             execute_cb=self.step_cb, auto_start=False)
 
-        self._reset_server.start()            
+        self._reset_server.start()
         self._step_server.start()
 
         rospy.loginfo('Environment ready')
@@ -50,6 +54,8 @@ class EnvironmentServer(object):
             self._reset_server.set_succeeded(result)
         except Exception as e:
             rospy.logerr('Reset exception: %s', e)
+            if self._debug:
+                traceback.print_exc(file=sys.stdout)
             self._reset_server.set_aborted(text=e.message)
 
     def step_cb(self, goal):
@@ -76,4 +82,6 @@ class EnvironmentServer(object):
             self._step_server.set_succeeded(result)
         except Exception as e:
             rospy.logerr('Step exception: %s', e)
+            if self._debug:
+                traceback.print_exc(file=sys.stdout)
             self._step_server.set_aborted(text=e.message)
