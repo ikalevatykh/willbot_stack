@@ -29,13 +29,16 @@ class ImageListener():
 
         self._sub = rospy.Subscriber(
             topic, Image, imgmsg_cb, queue_size=1, buff_size=2**24)
-        print('Waiting for an image ({})...'.format(topic))
 
+        deadline = rospy.Time.now() + rospy.Duration(1.0)
         while not rospy.core.is_shutdown() and self._imgmsg is None:
+            if rospy.Time.now() > deadline:
+                rospy.logwarn_throttle(
+                    1.0, 'Waiting for an image ({})...'.format(topic))
             rospy.rostime.wallsleep(0.01)
 
         if rospy.core.is_shutdown():
-            raise rospy.exceptions.ROSInterruptException("rospy shutdown")                    
+            raise rospy.exceptions.ROSInterruptException("rospy shutdown")
 
     def latest(self, encoding=None, with_time=False):
         """ 

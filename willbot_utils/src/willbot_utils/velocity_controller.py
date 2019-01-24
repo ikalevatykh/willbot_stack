@@ -63,8 +63,9 @@ class VelocityController(object):
 
         p = np.array([X2.p.x(), X2.p.y(), X2.p.z()])
         if np.any(p < self._workspace[0, :]-0.01) or np.any(p > self._workspace[1, :]+0.01):
-            raise ControllerException(
-                'Target outside workspace bounds: {} / {}'.format(p, self._workspace))
+            # raise ControllerException(
+            #    'Target outside workspace bounds: {} / {}'.format(p, self._workspace))
+            return
 
         q1 = self._kin.inverse(pm.toMatrix(X1), q_guess=q0)
         if q1 is None:

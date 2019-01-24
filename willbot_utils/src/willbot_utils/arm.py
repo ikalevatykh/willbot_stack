@@ -13,6 +13,12 @@ class UR5(moveit_commander.MoveGroupCommander):
         # set default path planner
         self.set_planner_id("RRTConnectkConfigDefault")
 
+    def get_current_position(self):
+        """Returns a list of 3 elements defining the [x, y, z] of the end-effector."""
+        pose = self.get_current_pose()
+        vec = pose.pose.position
+        return [vec.x, vec.y, vec.z]
+
     def cartesian(self):
         """Returns interface for cartesian path planning."""
         return CartesianPlan(self)

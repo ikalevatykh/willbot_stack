@@ -1,5 +1,6 @@
-import moveit_commander
 import rospy
+import moveit_commander
+
 from geometry_msgs.msg import PoseStamped, Pose
 from moveit_msgs.srv import GetPlanningScene, ApplyPlanningScene
 from moveit_msgs.msg import PlanningScene, PlanningSceneComponents, ObjectColor
@@ -11,20 +12,34 @@ class StandardScene(object):
         robot = moveit_commander.RobotCommander()
         self._planning_frame = robot.get_planning_frame()
         self._scene = scene
-        self._apply_service = rospy.ServiceProxy('apply_planning_scene', ApplyPlanningScene)
+        self._apply_service = rospy.ServiceProxy(
+            'apply_planning_scene', ApplyPlanningScene)
         self._colors = {}
 
-        scene.remove_world_object("table")
-        scene.remove_world_object("wall")
-        rospy.sleep(1)
+        self.clear()
+        rospy.rostime.wallsleep(0.1)
 
-        # Mark table and wall zone as obstacles
-        print('update scene')
-        self.add_box("table", (1.2, 0.8, 0.1), (0.36, 0.0, -0.05))
-        self.add_box("rubber", (1.2, 0.625, 0.01), (0.36, 0.0, 0.005), color=(1, 1, 1))
-        self.add_box("wall", (1.2, 0.04, 0.7), (0.36, -0.42, 0.25))
-        rospy.sleep(1)
-        
+        setup = rospy.get_param('/setup', 'paris')
+        rospy.logdebug('Scene setup: {}', setup)
+
+        if setup == 'paris':
+            self.add_box("table",
+                         (1.2, 0.8, 0.1), (0.36, 0.0, -0.05))
+            self.add_box("rubber",
+                         (1.2, 0.625, 0.01), (0.36, 0.0, 0.005), color=(1, 1, 1))
+            self.add_box("wall",
+                         (1.2, 0.04, 0.7), (0.36, -0.42, 0.25))
+            rospy.rostime.wallsleep(0.1)
+
+            robot.manipulator.set_support_surface_name('rubber')
+
+        if setup == 'grenoble':
+            self.add_box("table",
+                         (1.0, 1.0, 0.1), (0.16, 0.0, -0.05))
+            rospy.rostime.wallsleep(0.1)
+
+            robot.manipulator.set_support_surface_name('table')
+
     def set_color(self, name, rgba):
         color = ObjectColor()
         color.id = name
@@ -40,11 +55,8 @@ class StandardScene(object):
         for color in self._colors.values():
             p.object_colors.append(color)
         resp = self._apply_service.call(p)
-        if not resp.success:
-            rospy.logerr("Could not update colors through service, using topic instead.")
-            self._scene_pub.publish(p)
-        
-    def add_box(self, name, size, pos, orn=(0,0,0,1), color=(0,1,0,1)):
+
+    def add_box(self, name, size, pos, orn=(0, 0, 0, 1), color=(0, 1, 0, 1)):
         p = PoseStamped()
         p.header.frame_id = self._planning_frame
         p.pose.position.x = pos[0]
@@ -56,28 +68,26 @@ class StandardScene(object):
         p.pose.orientation.w = orn[3]
         self._scene.add_box(name, p, size)
         self.set_color(name, color)
-        self.send_colors() 
-       
+        self.send_colors()
+
     def remove_world_object(self, name):
         self._scene.remove_world_object(name)
-        
+
+    def clear(self):
+        self._scene.remove_attached_object('tool')
+        self._scene.remove_world_object()
+
+
 def main():
     import sys
-    import moveit_commander
 
     rospy.init_node('scene', anonymous=True)
-    moveit_commander.roscpp_initialize(sys.argv)
     try:
         scene = StandardScene()
         rospy.sleep(5)
     except rospy.ROSInterruptException:
         pass
-    except Exception as e:
-        print(e)
-    finally:
-        moveit_commander.roscpp_shutdown()
-        moveit_commander.os._exit(0)
-        
+
+
 if __name__ == '__main__':
     main()
-

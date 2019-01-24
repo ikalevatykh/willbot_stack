@@ -1,3 +1,5 @@
+import rospy
+
 class TopPickPlacePlan(object):
     """ Helper for planning a simple pick and place action """
 
@@ -34,6 +36,7 @@ class TopPickPlacePlan(object):
 
         self._arm.attach_object(
             self._object_name, touch_links=self._hand.links)
+        rospy.rostime.wallsleep(0.1)
         self._hand.close()
 
         plan = self._arm.cartesian()
@@ -50,6 +53,7 @@ class TopPickPlacePlan(object):
 
         self._hand.open()
         self._arm.detach_object()
+        rospy.rostime.wallsleep(0.1)
 
         plan = self._arm.cartesian()
         plan.move(upper_pos, place_orn)
