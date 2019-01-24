@@ -35,7 +35,7 @@ def run_client():
         tool_position=tool_pose
     )
     obs, reward, done, info = env.step(act)
-    rospy.loginfo('Step ok. done={}', done)
+    rospy.loginfo('Step ok. done={}'.format(done))
 
 
 def main():

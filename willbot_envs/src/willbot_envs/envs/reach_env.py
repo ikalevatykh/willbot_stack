@@ -6,7 +6,7 @@ from base_env import WillbotEnv
 
 class ReachEnv(WillbotEnv):
     """Reach environment. 
-    
+
     Agent's goal is to move an arm close to the target in xy plane.
     """
 
@@ -62,7 +62,7 @@ class ReachEnv(WillbotEnv):
 
     def done(self):
         """Returns True if target and tool in xy plane is close """
-        return np.isclose(
+        return np.allclose(
             self._target_position[:2],
             self._arm.get_current_position()[:2],
             atol=self._success_tolerance)
