@@ -1,38 +1,47 @@
-import json
-
 import gym
 from gym.utils import seeding
 
 import rospy
 import actionlib
 
+from willbot_envs.utils import loads, dumps
+
 from actionlib_msgs.msg import GoalStatus
 from willbot_envs.msg import EnvResetAction, EnvResetGoal
 from willbot_envs.msg import EnvStepAction, EnvStepGoal
+from willbot_envs.srv import Seed, SeedRequest
+from willbot_envs.srv import Init, InitRequest
+from willbot_envs.srv import Close, CloseRequest
 
 
 class EnvironmentClient(gym.Env):
     """Client for ROS environment server. 
-    
+
     Provides gym interface for remote environment. 
     Can be used from python 3.x. 
     """
 
     def __init__(self, environment_id):
-        """"""
+        """Connects to environment server and init standalone environment.
+
+        Arguments:
+            environment_id(string): unique environment id
+        """
+
+        self._init_client = rospy.ServiceProxy(
+            '/willbot_env/init', Init)
+        self._close_client = rospy.ServiceProxy(
+            '/willbot_env/close', Close)
+        self._seed_client = rospy.ServiceProxy(
+            '/willbot_env/seed', Seed)
         self._reset_client = actionlib.SimpleActionClient(
             '/willbot_env/reset', EnvResetAction)
         self._step_client = actionlib.SimpleActionClient(
             '/willbot_env/step', EnvStepAction)
-        timeout = rospy.Duration(5.0)
 
-        if not (self._reset_client.wait_for_server(timeout) and
-                self._step_client.wait_for_server(timeout)):
-            raise RuntimeError('Cannot connect to an Environment Server')
-
-        self._environment_id = environment_id
-        self._episode_id = 0
-        self._seed = []
+        self._init_client.wait_for_service(timeout=5.0)
+        resp = self._init_client(environment_id)
+        self._session_id = resp.session_id
 
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
@@ -40,8 +49,8 @@ class EnvironmentClient(gym.Env):
         to reset this environment's state."""
 
         goal = EnvStepGoal(
-            episode_id=self._episode_id,
-            action=json.dumps(action)
+            session_id=self._session_id,
+            action=dumps(action)
         )
         self._step_client.send_goal(goal)
 
@@ -54,23 +63,19 @@ class EnvironmentClient(gym.Env):
             raise RuntimeError(self._step_client.get_goal_status_text())
 
         result = self._step_client.get_result()
-        observation = json.loads(result.observation)
+        observation = loads(result.observation)
         reward = result.reward
         done = result.done
-        info = json.loads(result.info)
+        info = loads(result.info)
 
         return observation, reward, done, info
 
-    def reset(self):
+    def reset(self, **params):
         """Resets the state of the environment and returns an initial observation."""
 
-        seed = EnvResetGoal.NO_SEED
-        if self._seed:
-            seed = self._seed.pop()
-
         goal = EnvResetGoal(
-            environment_id=self._environment_id,
-            seed=seed
+            session_id=self._session_id,
+            params=dumps(params)
         )
         self._reset_client.send_goal(goal)
 
@@ -83,8 +88,8 @@ class EnvironmentClient(gym.Env):
             raise RuntimeError(self._reset_client.get_goal_status_text())
 
         result = self._reset_client.get_result()
-        self._episode_id = result.episode_id
-        observation = json.loads(result.observation)
+        observation = loads(result.observation)
+
         return observation
 
     def close(self):
@@ -92,12 +97,13 @@ class EnvironmentClient(gym.Env):
 
         self._reset_client.cancel_all_goals()
         self._step_client.cancel_all_goals()
+        self._close_client(self._session_id)
 
     def seed(self, seed=None):
         """Sets the seed for this env's random number generator(s)."""
 
-        self._seed = [seed]
-        return self._seed
+        resp = self._seed_client(self._session_id, seed)
+        return resp.seeds
 
     def render(self, mode='human', close=False):
         """Renders the environment."""

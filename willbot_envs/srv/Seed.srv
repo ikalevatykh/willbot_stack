@@ -1,6 +1,9 @@
+# Unique session id
+int32 session_id
+
 # Sets the seed for this env's random number generator(s)
-UInt64 seed
+int32 seed
 
 ---
 
-UInt64[] seeds
+int32[] seeds

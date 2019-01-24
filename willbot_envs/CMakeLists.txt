@@ -22,6 +22,14 @@ add_action_files(
   EnvStep.action
 )
 
+add_service_files(
+  DIRECTORY srv
+  FILES
+  Close.srv
+  Init.srv
+  Seed.srv
+)
+
 generate_messages(
   DEPENDENCIES
   std_msgs

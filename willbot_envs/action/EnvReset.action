@@ -1,19 +1,12 @@
-# Environment id
-string environment_id
+# Unique session id
+int32 session_id
 
-# The seed for this env's random number generator
-int32 seed
-int32 NO_SEED = -1
+# Contains auxiliary diagnostic information (in json format)
+string params
 
 ---
 
 # Task specific observation (in json format)
 string observation
 
-# Episode id
-int32 episode_id
-
 ---
-
-# The internal state that the reset action currently is in
-string state

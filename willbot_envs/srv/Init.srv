@@ -1,0 +1,7 @@
+# Environment id to instantiate
+string environment_id
+
+---
+
+# Unique session id
+int32 session_id

@@ -1,5 +1,5 @@
-# Episode id, have to be the same as reset action returns
-int32 episode_id
+# Unique session id
+int32 session_id
 
 # An action provided by the environment (in json format)
 string action
@@ -19,6 +19,3 @@ bool done
 string info
 
 ---
-
-# The internal state that the reset action currently is in
-string state
