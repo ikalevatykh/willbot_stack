@@ -36,6 +36,14 @@ class StandardScene(object):
         if setup == 'grenoble':
             self.add_box("table",
                          (1.0, 1.0, 0.1), (0.16, 0.0, -0.05))
+            self.add_box("wall_right",
+                         (1.05, 0.01, 0.55), (0.15, 0.48, 0.275))
+            self.add_box("wall_left",
+                         (1.05, 0.01, 0.55), (0.15, -0.48, 0.275))
+            self.add_box("wall_back",
+                         (1.0, 0.01, 0.62), (-0.34, 0.0, 0.31))
+            self.add_box("pole_left",
+                         (0.04, 0.04, 1.2), (-0.21, -0.4, 0.55))
             rospy.rostime.wallsleep(0.1)
 
             robot.manipulator.set_support_surface_name('table')
