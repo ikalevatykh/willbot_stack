@@ -45,7 +45,10 @@ class EnvironmentServer(object):
                 self._environment.close()
                 self._environment = None
 
-            self._environment = load_env(req.environment_id)
+            env_cls = load_env(req.environment_id)
+            params = loads(req.params)
+            
+            self._environment = env_cls(**params)
             self._session_id += 1
 
             result = InitResponse(

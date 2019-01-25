@@ -22,7 +22,7 @@ class EnvironmentClient(gym.Env):
     Can be used from python 3.x. 
     """
 
-    def __init__(self, environment_id, init_node=True):
+    def __init__(self, environment_id, init_node=True, **params):
         """Connects to environment server and init standalone environment.
 
         Arguments:
@@ -47,7 +47,8 @@ class EnvironmentClient(gym.Env):
             '/willbot_env/step', EnvStepAction)
 
         self._init_client.wait_for_service(timeout=5.0)
-        resp = self._init_client(environment_id)
+        resp = self._init_client(
+            environment_id, dumps(params))
         self._session_id = resp.session_id
 
     def step(self, action):

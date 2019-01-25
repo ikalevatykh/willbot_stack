@@ -27,4 +27,4 @@ def load_env(class_name):
         class_name = 'willbot_envs.envs:' + class_name
     entry_point = pkg_resources.EntryPoint.parse('x={}'.format(class_name))
     result = entry_point.resolve()
-    return result()
+    return result

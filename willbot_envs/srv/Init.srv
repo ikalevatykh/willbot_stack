@@ -1,6 +1,9 @@
 # Environment id to instantiate
 string environment_id
 
+# Contains specific params needed for initialize environment (in json format)
+string params
+
 ---
 
 # Unique session id

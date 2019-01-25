@@ -1,7 +1,7 @@
 # Unique session id
 int32 session_id
 
-# Contains auxiliary diagnostic information (in json format)
+# Contains specific params needed for reset (in json format)
 string params
 
 ---
