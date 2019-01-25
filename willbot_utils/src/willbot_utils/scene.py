@@ -19,7 +19,7 @@ class StandardScene(object):
         self.clear()
         rospy.rostime.wallsleep(0.1)
 
-        setup = rospy.get_param('/setup', 'paris')
+        setup = rospy.get_param('/willbot_setup')
         rospy.logdebug('Scene setup: {}', setup)
 
         if setup == 'paris':
