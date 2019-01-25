@@ -5,28 +5,27 @@
 
   Usage:
     willbot_real.launch
-      setup:=<paris|grenoble>
-      robot_ip:=<value> gripper_ip:=<value> 
-      camera:=<kinect|kinect2|realsense|none>
+      [setup:=<paris|grenoble>]
+      [robot_ip:=<value>] [gripper_ip:=<value>] 
+      [camera:=<kinect|kinect2|realsense|none>]
+      [init_gripper:=<true|false>]
 -->
 <launch>
-
   <arg name="setup" default="paris"/>
 
-  <arg name="robot_ip" default="192.168.1.20" if="$(eval setup == 'paris')"/>
-  <arg name="robot_ip" default="192.168.1.1" if="$(eval setup == 'grenoble')"/>  
+  <arg if="$(eval setup == 'paris')"    name="robot_ip" default="192.168.1.20" />
+  <arg if="$(eval setup == 'grenoble')" name="robot_ip" default="192.168.1.1" />  
   <arg name="gripper_ip" default="192.168.1.11"/>
 
-  <arg name="gripper_name" default="gripper" />
-  <arg name="arm_name" default="arm" />
-
-  <arg name="ur_limited" default="false"/>
   <arg name="init_gripper" default="true" />
 
-  <arg name="camera" default="none" />
+  <arg name="camera" default="none"/>
+
+  <!-- set global parameter for any node -->
+  <param name="willbot_setup" value="$(arg setup)"/> 
 
   <!-- customize logging settings -->
-  <include file="$(find willbot_bringup)/launch/customize_log.launch" />
+  <include file="$(find willbot_bringup)/launch/customize_log.launch"/>
 
   <!-- upload robot model -->
   <include file="$(find willbot_description)/launch/willbot_upload.launch">
@@ -36,13 +35,13 @@
   <!-- bringup arm -->
   <include file="$(find willbot_bringup)/launch/ur_ros_control.launch">
     <arg name="robot_ip" value="$(arg robot_ip)"/>
-    <arg name="arm_name" value="$(arg arm_name)" />
+    <arg name="arm_name" value="arm" />
   </include>
 
   <!-- bringup gripper -->
   <include file="$(find willbot_bringup)/launch/gripper_ros_control.launch">
     <arg name="gripper_ip" value="$(arg gripper_ip)"/>
-    <arg name="gripper_name" value="$(arg gripper_name)" />
+    <arg name="gripper_name" value="gripper" />
     <arg name="init_gripper" value="$(arg init_gripper)" />
   </include>
 
