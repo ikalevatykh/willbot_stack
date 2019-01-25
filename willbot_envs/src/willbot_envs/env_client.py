@@ -1,3 +1,4 @@
+import sys
 import gym
 from gym.utils import seeding
 
@@ -21,12 +22,18 @@ class EnvironmentClient(gym.Env):
     Can be used from python 3.x. 
     """
 
-    def __init__(self, environment_id):
+    def __init__(self, environment_id, init_node=True):
         """Connects to environment server and init standalone environment.
 
         Arguments:
-            environment_id(string): unique environment id
+            environment_id(string): unique environment id.
+            init_node(bool): if setted register ROS node.
         """
+        self._session_id = -1
+
+        if init_node:
+            rospy.myargv(argv=sys.argv)
+            rospy.init_node('willbot_env_client', anonymous=False)
 
         self._init_client = rospy.ServiceProxy(
             '/willbot_env/init', Init)
@@ -92,13 +99,6 @@ class EnvironmentClient(gym.Env):
 
         return observation
 
-    def close(self):
-        """Override _close in your subclass to perform any necessary cleanup."""
-
-        self._reset_client.cancel_all_goals()
-        self._step_client.cancel_all_goals()
-        self._close_client(self._session_id)
-
     def seed(self, seed=None):
         """Sets the seed for this env's random number generator(s)."""
 
@@ -108,3 +108,20 @@ class EnvironmentClient(gym.Env):
     def render(self, mode='human', close=False):
         """Renders the environment."""
         raise NotImplementedError
+
+    def close(self):
+        """Override _close in your subclass to perform any necessary cleanup."""
+
+        if not rospy.core.is_shutdown() and self._session_id != -1:
+            self._reset_client.cancel_all_goals()
+            self._step_client.cancel_all_goals()
+            self._close_client(self._session_id)
+            self._session_id = -1
+
+    def __enter__(self):
+        """Just return self."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """close connection at exit."""
+        self.close()

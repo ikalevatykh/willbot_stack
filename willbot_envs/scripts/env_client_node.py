@@ -16,36 +16,33 @@ def run_client():
     This node can be started from python 3.x.
     """
     # Client for standalone environment server
-    env = EnvironmentClient('ReachEnv')
+    with EnvironmentClient('ReachEnv') as env:
 
-    # Wrappers for observations what you need
-    env = CameraObserver(
-        env, key='depth', topic='/kinect2/sd/image_depth_rect')
-    env = CameraObserver(
-        env, key='rgb', topic='/kinect2/sd/image_color_rect')
-    env = JointStateObserver(env)
+        # Wrappers for observations
+        env = CameraObserver(
+            env, key='depth', topic='/kinect2/sd/image_depth_rect')
+        env = CameraObserver(
+            env, key='rgb', topic='/kinect2/sd/image_color_rect')
+        env = JointStateObserver(env)
 
-    # Use env like an ordinary gym environment
-    env.seed(0)
-    obs = env.reset()
-    rospy.loginfo('Reset ok')
+        # Use env like an ordinary gym environment
+        env.seed(777)
+        obs = env.reset()
+        rospy.loginfo('Reset ok')
 
-    tool_pose = obs['target_position'] + [0.20, ]
-    act = dict(
-        tool_position=tool_pose
-    )
-    obs, reward, done, info = env.step(act)
-    rospy.loginfo('Step ok. done={}'.format(done))
+        done = False
+        while not done:
+            target_xy = obs['target_position']
+            act = dict(
+                tool_position=target_xy + [0.20, ]
+            )
+            obs, reward, done, info = env.step(act)
+            rospy.loginfo('Step ok')
 
 
 def main():
-    rospy.myargv(argv=sys.argv)
-    rospy.init_node('willbot_env_client', anonymous=False)
     try:
         run_client()
-    except Exception as e:
-        rospy.logerr(e)
-        traceback.print_exc(file=sys.stdout)
     except rospy.ROSInterruptException:
         pass
 
