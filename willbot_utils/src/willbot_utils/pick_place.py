@@ -3,7 +3,7 @@ import rospy
 class TopPickPlacePlan(object):
     """ Helper for planning a simple pick and place action """
 
-    def __init__(self, arm, hand, object_name):
+    def __init__(self, arm, hand, object_name=None):
         self._arm = arm
         self._hand = hand
         self._object_name = object_name
@@ -34,9 +34,10 @@ class TopPickPlacePlan(object):
         if not plan.execute():
             return False
 
-        self._arm.attach_object(
-            self._object_name, touch_links=self._hand.links)
-        rospy.rostime.wallsleep(0.1)
+        if self._object_name is not None:
+            self._arm.attach_object(
+                self._object_name, touch_links=self._hand.links)
+            rospy.rostime.wallsleep(0.1)
         self._hand.close()
 
         plan = self._arm.cartesian()
@@ -52,8 +53,9 @@ class TopPickPlacePlan(object):
             return False
 
         self._hand.open()
-        self._arm.detach_object()
-        rospy.rostime.wallsleep(0.1)
+        if self._object_name is not None:
+            self._arm.detach_object()
+            rospy.rostime.wallsleep(0.1)
 
         plan = self._arm.cartesian()
         plan.move(upper_pos, place_orn)
