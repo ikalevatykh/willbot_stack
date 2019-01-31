@@ -1,0 +1,7 @@
+<library path="libwillbot_moveit_plugins">
+  <class name="move_group/MoveGroupVelocityControl" type="move_group::MoveGroupVelocityControl" base_class_type="move_group::MoveGroupCapability">
+    <description>
+      Action server to velocity control.
+    </description>
+  </class>
+</library>
