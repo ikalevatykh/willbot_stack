@@ -5,15 +5,18 @@ from base_env import WillbotEnv
 
 
 class ReachEnv(WillbotEnv):
-    """Reach environment. 
+    """Reach environment.
 
     Agent's goal is to move an arm close to the target in xy plane.
     """
 
-    def __init__(self):
+    def __init__(self, update_scene=True):
         super(ReachEnv, self).__init__()
         self._tool_orn = (np.pi, 0, np.pi/2)
         self._success_tolerance = 0.01
+        self._update_scene = update_scene
+        self._target_name = None
+        self._target_position = None
         self._setup = False
 
     def setup(self):
@@ -25,8 +28,10 @@ class ReachEnv(WillbotEnv):
         # add target model to a scene
         cube_pos = (0.30, 0.00, 0.041)
         cube_dim = (0.06, 0.06, 0.056)
-        self._scene.add_box(
-            'target', cube_dim, cube_pos)
+        if self._update_scene:
+            self._target_name = 'target'
+            self._scene.add_box(
+                self._target_name, cube_dim, cube_pos)
         self._target_position = cube_pos
 
         self._setup = True
@@ -46,7 +51,7 @@ class ReachEnv(WillbotEnv):
             tool_pos = self._np_random.uniform(*tool_limits)
 
         # pick and place target to a new (random) place
-        plan = self._arm.pick_place(self._hand, 'target')
+        plan = self._arm.pick_place(self._hand, self._target_name)
         plan.pick(self._target_position)
         plan.place(target_pos)
         if not plan.execute():
