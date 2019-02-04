@@ -1,22 +1,23 @@
+import math
 import rospy
 import moveit_commander
 import dynamic_reconfigure.client
 
 
 class RobotiqHand(object):
-    def __init__(self):
-        self._open_position = 0.22
-        self._close_position = 0.6
+    def __init__(self, group_name="gripper"):
+        self._open_position = 0.05
+        self._close_position = 0.95
 
-        self._gripper = moveit_commander.MoveGroupCommander("gripper")
-        self._client = dynamic_reconfigure.client.Client("gripper", timeout=5)
+        self._gripper = moveit_commander.MoveGroupCommander(group_name)
+        self._client = dynamic_reconfigure.client.Client(group_name, timeout=5)
         self._config = self._client.get_configuration(timeout=5)
 
         links = ['hand_palm']
         for f in ['1', '2', 'middle']:
             for l in ['0', '1', '2', '3']:
                 links.append('hand_finger_{}_link_{}'.format(f, l))
-        self._links = links        
+        self._links = links
 
     @property
     def links(self):
@@ -52,7 +53,7 @@ class RobotiqHand(object):
     @property
     def position(self):
         joints = self._gripper.get_current_joint_values()
-        return joints[0]
+        return joints[1]
 
     @property
     def is_object_held(self):
@@ -76,6 +77,17 @@ class RobotiqHand(object):
     def close(self, wait=True):
         return self.move(self._close_position, wait)
 
+    def parallel_grasp(self, width, wait=True):
+        """Grasp an object assuming parallel grasp.
+
+        Args:
+            width (float) : a grasping object width.
+            wait (bool) : wait motion finished
+        Returns:
+            bool: True if finger stopped at target width.
+        """
+        angle = 0.52 + math.asin((0.091 - 0.01 - width) / 2 / 0.1)
+        return self.move(angle, wait)
+
     def stop(self):
         self._gripper.stop()
-
