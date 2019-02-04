@@ -1,97 +1,281 @@
 import rospy
-import moveit_commander
 
-from geometry_msgs.msg import PoseStamped, Pose
-from moveit_msgs.srv import GetPlanningScene, ApplyPlanningScene
+from geometry_msgs.msg import Pose, PoseStamped, Point
+from moveit_msgs.msg import CollisionObject, AttachedCollisionObject
 from moveit_msgs.msg import PlanningScene, PlanningSceneComponents, ObjectColor
+from moveit_msgs.srv import GetPlanningScene, ApplyPlanningScene
+from shape_msgs.msg import MeshTriangle, Mesh, SolidPrimitive, Plane
 
 
-class StandardScene(object):
-    def __init__(self):
-        scene = moveit_commander.PlanningSceneInterface()
-        robot = moveit_commander.RobotCommander()
-        self._planning_frame = robot.get_planning_frame()
+class SceneObject(object):
+    """Collision object on the planning scene."""
+
+    def __init__(self, scene, collision_object):
         self._scene = scene
-        self._apply_service = rospy.ServiceProxy(
-            'apply_planning_scene', ApplyPlanningScene)
-        self._colors = {}
+        self._co = collision_object
 
-        self.clear()
-        rospy.rostime.wallsleep(0.1)
+    @property
+    def name(self):
+        """Unique object name."""
+        return self._co.id
 
-        setup = rospy.get_param('/willbot_setup')
-        rospy.logdebug('Scene setup: {}', setup)
+    def attach(self, link, touch_links):
+        """Attach the object to an arm link."""
+        self._scene.attach_object(self.name, link, touch_links)
 
-        if setup == 'paris':
-            self.add_box("table",
-                         (1.2, 0.8, 0.1), (0.36, 0.0, -0.05))
-            self.add_box("rubber",
-                         (1.2, 0.625, 0.01), (0.36, 0.0, 0.005), color=(1, 1, 1))
-            self.add_box("wall",
-                         (1.2, 0.04, 0.7), (0.36, -0.42, 0.25))
-            rospy.rostime.wallsleep(0.1)
+    def detach(self):
+        """Detach the object."""
+        self._scene.detach_object(self.name)
 
-            robot.manipulator.set_support_surface_name('rubber')
+    def move(self, pos):
+        """Move the object to a new position."""
+        self._scene.move_object(self.name, pos)
 
-        if setup == 'grenoble':
-            self.add_box("table",
-                         (1.0, 1.0, 0.1), (0.16, 0.0, -0.05))
-            self.add_box("wall_right",
-                         (1.05, 0.01, 0.55), (0.15, 0.48, 0.275))
-            self.add_box("wall_left",
-                         (1.05, 0.01, 0.55), (0.15, -0.48, 0.275))
-            self.add_box("wall_back",
-                         (1.0, 0.01, 0.62), (-0.34, 0.0, 0.31))
-            self.add_box("pole_left",
-                         (0.04, 0.04, 1.2), (-0.21, -0.4, 0.55))
-            rospy.rostime.wallsleep(0.1)
+    def shift(self, dpos):
+        """Shift the object."""
+        self._scene.shift_object(self.name, dpos)
 
-            robot.manipulator.set_support_surface_name('table')
+    def remove(self):
+        """Remove the object from the scene."""
+        self._scene.remove_object(self.name)
 
-    def set_color(self, name, rgba):
+
+class Scene(object):
+    """Interface for the planning scene."""
+
+    def __init__(self, planning_frame):
+        self._planning_frame = planning_frame
+
+        self._get_planning_scene = rospy.ServiceProxy(
+            '/get_planning_scene', GetPlanningScene)
+        self._get_planning_scene.wait_for_service(timeout=5.0)
+
+        self._apply_planning_scene = rospy.ServiceProxy(
+            '/apply_planning_scene', ApplyPlanningScene)
+        self._apply_planning_scene.wait_for_service(timeout=5.0)
+
+    def add_box(self, name, size, pos):
+        """Add a box primitive to the planning scene.
+
+        Args:
+            @name (str): collision object name
+            @size (x,y,z): object size
+            @pos (x,y,z): position
+        Returns:
+            CollsionObject interface for the new object
+        """
+        co = self._make_box(name, size, pos)
+        self._apply_scene_diff([co])
+        return SceneObject(self, co)
+
+    def attach_object(self, name, link='', touch_links=[]):
+        """Given the name of an object existing in the planning scene,
+        attach it to a robot link.
+
+        Args:
+            @name (str): collision object name
+            @link (str): link to attach to
+            @touch_links (list): links that can touch an object
+        """
+        aoc = AttachedCollisionObject()
+        aoc.object.operation = CollisionObject.ADD
+        aoc.object.id = name
+        aoc.touch_links = touch_links
+        aoc.link_name = link
+        self._apply_scene_diff([aoc])
+
+    def detach_object(self, name='', link=''):
+        """Given the name of a link, detach the object(s) from that link.
+
+        Args:
+            @name (str): object name (detach all attached objects if avoided)
+            @link (str): link to detach from
+        """
+        aoc = AttachedCollisionObject()
+        aoc.object.operation = CollisionObject.REMOVE
+        if name:
+            aoc.object.id = name
+        if link:
+            aoc.link_name = link
+        self._apply_scene_diff([aoc])
+
+    def move_object(self, name, pos):
+        """Move a collision object to a new position.
+        Args:
+            @name (str): object name
+            @pos (x,y,z): new position
+        """
+        pose = self._make_pose(pos)
+        co = self._move_command(name, pose)
+        self._apply_scene_diff([co])
+
+    def shift_object(self, name, dpos):
+        """Shift a collision object to a new position.
+        Args:
+            @name (str): object name
+            @spos (x,y,z): shift
+        """
+        scene = self._get_scene()
+        obj = next([obj for obj in scene.world.collision_objects
+                    if obj.id == name], None)
+        if obj is not None:
+            pose = obj.primitive_poses[0]
+            pose.position.x += dpos[0]
+            pose.position.y += dpos[1]
+            pose.position.z += dpos[2]
+            co = self._move_command(name, pose)
+            self._apply_scene_diff([co])
+
+    def remove_object(self, name):
+        """Remove a collision object from the planning scene.
+        Args:
+            @name (str): object name
+        """
+        co = self._remove_command(name)
+        self._apply_scene_diff([co])
+
+    def clear(self):
+        """Clear the planning scene."""
+        # self.detach_object()
+        # self._scene.clear()
+        scene = self._get_scene()
+        for obj in scene.robot_state.attached_collision_objects:
+            self.detach_object(obj.object.id)
+        for obj in scene.world.collision_objects:
+            self.remove_object(obj.id)
+
+    def _make_box(self, name, size, pos):
+        sp = SolidPrimitive()
+        sp.type = SolidPrimitive.BOX
+        sp.dimensions = size
+        return self._make_solid(
+            name, sp, self._make_pose(pos))
+
+    def _make_solid(self, name, solid, pose):
+        co = CollisionObject()
+        co.header.stamp = rospy.Time.now()
+        co.header.frame_id = self._planning_frame
+        co.id = name
+        co.primitives.append(solid)
+        co.primitive_poses.append(pose)
+        co.operation = CollisionObject.ADD
+        return co
+
+    def _move_command(self, name, pose):
+        co = CollisionObject()
+        co.header.stamp = rospy.Time.now()
+        co.header.frame_id = self._planning_frame
+        co.id = name
+        co.primitive_poses.append(pose)
+        co.operation = CollisionObject.MOVE
+        return co
+
+    def _remove_command(self, name):
+        co = CollisionObject()
+        co.header.stamp = rospy.Time.now()
+        co.header.frame_id = self._planning_frame
+        co.id = name
+        co.operation = CollisionObject.REMOVE
+        return co
+
+    def _make_color(self, name, rgba):
         color = ObjectColor()
         color.id = name
         color.color.r = rgba[0]
         color.color.g = rgba[1]
         color.color.b = rgba[2]
         color.color.a = rgba[3] if len(rgba) > 3 else 1.0
-        self._colors[name] = color
+        return color
 
-    def send_colors(self):
-        p = PlanningScene()
-        p.is_diff = True
-        for color in self._colors.values():
-            p.object_colors.append(color)
-        resp = self._apply_service.call(p)
+    def _make_pose(self, pos):
+        pose = Pose()
+        pose.position.x = pos[0]
+        pose.position.y = pos[1]
+        pose.position.z = pos[2]
+        pose.orientation.w = 1.0
+        return pose
 
-    def add_box(self, name, size, pos, orn=(0, 0, 0, 1), color=(0, 1, 0, 1)):
-        p = PoseStamped()
-        p.header.frame_id = self._planning_frame
-        p.pose.position.x = pos[0]
-        p.pose.position.y = pos[1]
-        p.pose.position.z = pos[2]
-        p.pose.orientation.x = orn[0]
-        p.pose.orientation.y = orn[1]
-        p.pose.orientation.z = orn[2]
-        p.pose.orientation.w = orn[3]
-        self._scene.add_box(name, p, size)
-        self.set_color(name, color)
-        self.send_colors()
+    def _apply_scene_diff(self, items):
+        scene = PlanningScene()
+        scene.is_diff = True
+        scene.robot_state.is_diff = True
+        for item in items:
+            if isinstance(item, CollisionObject):
+                scene.world.collision_objects.append(item)
+            elif isinstance(item, AttachedCollisionObject):
+                scene.robot_state.attached_collision_objects.append(item)
+            elif isinstance(item, ObjectColor):
+                scene.object_colors.append(item)
 
-    def remove_world_object(self, name):
-        self._scene.remove_world_object(name)
+        resp = self._apply_planning_scene(scene)
+        if not resp.success:
+            raise RuntimeError("Could not apply planning scene diff.")
 
-    def clear(self):
-        self._scene.remove_attached_object('tool')
-        self._scene.remove_world_object()
+    def _get_scene(self):
+        req = PlanningSceneComponents()
+        req.components = sum([
+            PlanningSceneComponents.WORLD_OBJECT_NAMES,
+            PlanningSceneComponents.WORLD_OBJECT_GEOMETRY,
+            PlanningSceneComponents.ROBOT_STATE_ATTACHED_OBJECTS])
+        try:
+            resp = self._get_planning_scene(req)
+            return resp.scene
+        except rospy.ServiceException as e:
+            raise RuntimeError("Failed to get initial planning scene.")
+
+
+class StandardScene(Scene):
+    """Interface for the planning scene with a standart initialization."""
+
+    def __init__(self, arm):
+        super(StandardScene, self).__init__(arm.get_planning_frame())
+
+        setup = rospy.get_param('/willbot_setup')
+        rospy.logdebug('Scene setup: {}', setup)
+
+        self.clear()
+
+        if setup == 'paris':
+            self._apply_scene_diff([
+                self._make_box(
+                    "wall", (1.2, 0.04, 0.7), (0.36, -0.42, 0.25)),
+                self._make_box(
+                    "table", (1.2, 0.8, 0.1), (0.36, 0.0, -0.05)),
+                self._make_box(
+                    "rubber", (1.2, 0.625, 0.01), (0.36, 0, 0.005)),
+                self._make_color(
+                    "rubber", (1, 1, 1))
+            ])
+
+            arm.set_support_surface_name('rubber')
+
+        elif setup == 'grenoble':
+            self._apply_scene_diff([
+                self._make_box(
+                    "wall_right", (1.05, 0.01, 0.55), (0.15, 0.48, 0.275)),
+                self._make_box(
+                    "wall_left", (1.05, 0.01, 0.55), (0.15, -0.48, 0.275)),
+                self._make_box(
+                    "wall_back", (1.0, 0.01, 0.62), (-0.34, 0.0, 0.31)),
+                self._make_box(
+                    "pole_left", (0.04, 0.04, 1.2), (-0.21, -0.4, 0.55))
+                self._make_box(
+                    "table", (1.0, 1.0, 0.1), (0.16, 0.0, -0.05)),
+                self._make_color(
+                    "table", (1, 1, 1))
+            ])
+
+            arm.set_support_surface_name('table')
 
 
 def main():
     import sys
+    import moveit_commander
 
     rospy.init_node('scene', anonymous=True)
     try:
-        scene = StandardScene()
+        arm = moveit_commander.MoveGroupCommander('manipulator')
+        scene = StandardScene(arm)
         rospy.sleep(5)
     except rospy.ROSInterruptException:
         pass
