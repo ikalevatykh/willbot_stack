@@ -64,6 +64,8 @@ class EnvironmentClient(gym.Env):
 
         finished = self._step_client.wait_for_result(rospy.Duration(30.0))
         if not finished:
+            if rospy.core.is_shutdown():
+                raise rospy.exceptions.ROSInterruptException("rospy shutdown")
             raise RuntimeError('Environment server not responding')
 
         state = self._step_client.get_state()
@@ -89,6 +91,8 @@ class EnvironmentClient(gym.Env):
 
         finished = self._reset_client.wait_for_result(rospy.Duration(30.0))
         if not finished:
+            if rospy.core.is_shutdown():
+                raise rospy.exceptions.ROSInterruptException("rospy shutdown")
             raise RuntimeError('Environment server not responding')
 
         state = self._reset_client.get_state()
@@ -113,7 +117,7 @@ class EnvironmentClient(gym.Env):
     def close(self):
         """Override _close in your subclass to perform any necessary cleanup."""
 
-        if not rospy.core.is_shutdown() and self._session_id != -1:
+        if self._session_id != -1:
             self._reset_client.cancel_all_goals()
             self._step_client.cancel_all_goals()
             self._close_client(self._session_id)
