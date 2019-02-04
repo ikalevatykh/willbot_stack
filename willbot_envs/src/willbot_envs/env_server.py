@@ -19,20 +19,23 @@ class EnvironmentServer(object):
         self._environment = None
         self._session_id = -1
 
-        self._seed_server = rospy.Service(
+        self._init_server = rospy.Service(
             '/willbot_env/init', Init, self.init_cb)
-        self._seed_server = rospy.Service(
+        self._close_server = rospy.Service(
             '/willbot_env/close', Close, self.close_cb)
         self._seed_server = rospy.Service(
             '/willbot_env/seed', Seed, self.seed_cb)
+
         self._reset_server = actionlib.SimpleActionServer(
             '/willbot_env/reset', EnvResetAction,
             execute_cb=self.reset_cb, auto_start=False)
+        self._reset_server.register_preempt_callback(self.preempt_cb)
+        self._reset_server.start()
+
         self._step_server = actionlib.SimpleActionServer(
             '/willbot_env/step', EnvStepAction,
             execute_cb=self.step_cb, auto_start=False)
-
-        self._reset_server.start()
+        self._step_server.register_preempt_callback(self.preempt_cb)
         self._step_server.start()
 
         rospy.loginfo('Environment ready')
@@ -47,7 +50,7 @@ class EnvironmentServer(object):
 
             env_cls = load_env(req.environment_id)
             params = loads(req.params)
-            
+
             self._environment = env_cls(**params)
             self._session_id += 1
 
@@ -73,7 +76,7 @@ class EnvironmentServer(object):
 
             return CloseResponse()
         except Exception as e:
-            rospy.logerr('Seed exception: %s', e)
+            rospy.logerr('Close exception: %s', e)
             if self._debug:
                 traceback.print_exc(file=sys.stdout)
             raise e
@@ -139,3 +142,15 @@ class EnvironmentServer(object):
             if self._debug:
                 traceback.print_exc(file=sys.stdout)
             self._step_server.set_aborted(text=e.message)
+
+    def preempt_cb(self):
+        try:
+            rospy.logdebug('preempt')
+            if self._environment is not None:
+                self._environment.close()
+                self._environment = None
+        except Exception as e:
+            rospy.logerr('Preempt exception: %s', e)
+            if self._debug:
+                traceback.print_exc(file=sys.stdout)
+            raise e
