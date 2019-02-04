@@ -14,24 +14,24 @@ class WillbotEnv(gym.Env):
         self._np_random = None
         self._seed = 0
 
+        rospy.loginfo('Connecting hand ...')
+        hand = RobotiqHand()
+        hand.mode = 1
+        hand.target_velocity = 15
+        hand.target_effort = 5
+        self._hand = hand
+        rospy.loginfo('- Hand OK')
+
         rospy.loginfo('Connecting arm ...')
-        self._arm = UR5()
+        self._arm = UR5(hand=hand)
 
         workspace = np.array([[0.3, -0.20, 0.050], [0.7, 0.20, 0.250]])
         self._arm.set_workspace(workspace.flatten())
         self._workspace = workspace
         rospy.loginfo('- Arm OK')
 
-        rospy.loginfo('Connecting hand ...')
-        hand = RobotiqHand()
-        hand.mode = 1
-        hand.target_velocity = 5
-        hand.target_effort = 5
-        self._hand = hand
-        rospy.loginfo('- Hand OK')
-
         rospy.loginfo('Preparing scene ...')
-        self._scene = StandardScene()
+        self._scene = StandardScene(self._arm)
         rospy.loginfo('- Scene OK')
 
     def reset(self):
@@ -76,3 +76,8 @@ class WillbotEnv(gym.Env):
         self._np_random = np_random
         self._seed = seed
         return [seed]
+
+    def close(self):
+        """Override close in your subclass to perform any necessary cleanup."""
+        self._arm.stop()
+        self._hand.stop()
