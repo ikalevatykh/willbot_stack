@@ -1,3 +1,4 @@
+import numpy as np
 import rospy
 import PyKDL as kdl
 import tf_conversions.posemath as pm
@@ -19,7 +20,7 @@ class CartesianPlan(object):
         self._frames.append(frame)
 
     def step_base(self, pos=(0, 0, 0), orn=(0, 0, 0)):
-        """ Shift in base frame """        
+        """ Shift in base frame """
         p, q = _from_pos_orn(pos, orn)
         frame = kdl.Frame(p, q) * self._frames[-1]
         self._frames.append(frame)
@@ -56,7 +57,13 @@ class CartesianPlan(object):
                 t = p.time_from_start
         plan.joint_trajectory.points = points
 
-        return self._arm.execute(plan, wait)
+        if not self._arm.execute(plan, wait):
+            current = self._arm.get_current_joint_values
+            desired = plan.joint_trajectory.points[-1].positions
+            if not np.allclose(current, desired, atol=0.01):
+                return False
+
+        return True
 
 
 def _from_pos_orn(pos, orn):
