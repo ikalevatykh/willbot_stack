@@ -35,7 +35,7 @@ pos_based_pos_traj_controller:
      - wrist_3_joint
    constraints:
       goal_time: 0.6
-      stopped_velocity_tolerance: 0.05
+      stopped_velocity_tolerance: 0.01
       shoulder_pan_joint: {trajectory: 0.15, goal: 0.01}
       shoulder_lift_joint: {trajectory: 0.15, goal: 0.01}
       elbow_joint: {trajectory: 0.15, goal: 0.01}
