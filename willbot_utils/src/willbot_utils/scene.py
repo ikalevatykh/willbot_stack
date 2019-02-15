@@ -320,7 +320,7 @@ class StandardScene(Scene):
                 self._make_box(
                     "wall_back", (1.0, 0.01, 0.62), (-0.34, 0.0, 0.31)),
                 self._make_box(
-                    "pole_left", (0.04, 0.04, 1.2), (-0.21, -0.4, 0.55))
+                    "pole_left", (0.04, 0.04, 1.2), (-0.21, -0.4, 0.55)),
                 self._make_box(
                     "table", (1.0, 1.0, 0.1), (0.16, 0.0, -0.05)),
                 self._make_color(
