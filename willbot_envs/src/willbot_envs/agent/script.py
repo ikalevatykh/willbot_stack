@@ -1,9 +1,3 @@
-from functools import partial
-
-from transforms3d import euler, quaternions
-
-import numpy as np
-
 from utils import Frame, TrapVelocityProfile
 
 
@@ -14,9 +8,10 @@ class ScriptAgent():
         state {dict} -- environment state
     '''
 
-    def __init__(self, state):
+    def __init__(self, rate, state):
         self._max_tool_vels = 0.1, 0.01
         self._max_grip_vel = 1.0
+        self._dt = 1.0 / rate
 
         # get current tool position
         self._frame = Frame(
@@ -78,19 +73,20 @@ class ScriptAgent():
             bool, dict -- done flag and next action
         '''
 
-        stage = self._stages[0]
-        done, act = stage.get_action(state)
-        if done:
-            self._stages.pop(0)
-
-        done = not self._stages
-        act = dict(
+        action = dict(
             linear_velocity=[0, 0, 0],
             angular_velocity=[0, 0, 0],
-            grip_velocity=0.0
-        ).update(act)
+            grip_velocity=0.0)
 
-        return done, act
+        if self._stages:
+            s_done, s_act = \
+                self._stages[0].get_action(state)
+            if s_done:
+                self._stages.pop(0)
+            action.update(s_act)
+
+        done = not self._stages
+        return done, action
 
 
 class LinearMove():
@@ -99,7 +95,7 @@ class LinearMove():
         axis, angle = frame0.rot_diff(frame1)
 
         self._profile = TrapVelocityProfile(
-            1.0, (step, max_vels[0]), (angle*angle, max_vels[1]))
+            1.0, (step, max_vels[0]), (axis*angle, max_vels[1]))
 
         self._dt = dt
         self._t = 0.0
@@ -114,7 +110,7 @@ class LinearMove():
 
 
 class GripperMove():
-    def __init__(self, dt, operaton, max_vel):
+    def __init__(self, operaton, max_vel):
         if operaton == 'open':
             self._v = max_vel
         else:

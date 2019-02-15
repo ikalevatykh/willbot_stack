@@ -59,7 +59,7 @@ class Frame():
             np.array, float -- axis and angle
         '''
 
-        dq = quaternions.qmult(other.q, quaternions.qinv(self.q))
+        dq = quaternions.qmult(other.q, quaternions.qinverse(self.q))
         axis, angle = quaternions.quat2axangle(dq)
         return axis, angle
 
