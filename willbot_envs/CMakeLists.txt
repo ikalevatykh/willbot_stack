@@ -28,6 +28,7 @@ add_service_files(
   Close.srv
   Init.srv
   Seed.srv
+  Step.srv
 )
 
 generate_messages(
