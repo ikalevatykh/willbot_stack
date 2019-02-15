@@ -8,9 +8,9 @@ from willbot_envs.msg import EnvStepAction, EnvStepResult
 from willbot_envs.srv import Init, InitResponse
 from willbot_envs.srv import Close, CloseResponse
 from willbot_envs.srv import Seed, SeedResponse
+from willbot_envs.srv import Step, StepResponse
 
 from willbot_envs.utils import loads, dumps, load_env
-from willbot_envs.envs.pick_env import PickEnv
 
 
 class EnvironmentServer(object):
@@ -25,18 +25,13 @@ class EnvironmentServer(object):
             '/willbot_env/close', Close, self.close_cb)
         self._seed_server = rospy.Service(
             '/willbot_env/seed', Seed, self.seed_cb)
-
+        self._step_server = rospy.Service(
+            '/willbot_env/step', Step, self.step_cb)
         self._reset_server = actionlib.SimpleActionServer(
             '/willbot_env/reset', EnvResetAction,
             execute_cb=self.reset_cb, auto_start=False)
         self._reset_server.register_preempt_callback(self.preempt_cb)
         self._reset_server.start()
-
-        self._step_server = actionlib.SimpleActionServer(
-            '/willbot_env/step', EnvStepAction,
-            execute_cb=self.step_cb, auto_start=False)
-        self._step_server.register_preempt_callback(self.preempt_cb)
-        self._step_server.start()
 
         rospy.loginfo('Environment ready')
 
@@ -120,28 +115,28 @@ class EnvironmentServer(object):
                 traceback.print_exc(file=sys.stdout)
             self._reset_server.set_aborted(text=e.message)
 
-    def step_cb(self, goal):
+    def step_cb(self, req):
         try:
-            rospy.logdebug('step %s', goal.action)
+            rospy.logdebug('step %s', req.action)
 
-            if goal.session_id != self._session_id:
+            if req.session_id != self._session_id:
                 raise RuntimeError('Wrong session')
 
-            action = loads(goal.action)
+            action = loads(req.action)
             obs, reward, done, info = self._environment.step(action)
 
-            result = EnvStepResult(
+            result = StepResponse(
                 observation=dumps(obs),
                 reward=reward,
                 done=done,
                 info=dumps(info)
             )
-            self._step_server.set_succeeded(result)
+            return result
+
         except Exception as e:
             rospy.logerr('Step exception: %s', e)
             if self._debug:
                 traceback.print_exc(file=sys.stdout)
-            self._step_server.set_aborted(text=e.message)
 
     def preempt_cb(self):
         try:

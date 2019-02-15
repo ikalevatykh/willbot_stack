@@ -13,6 +13,7 @@ from willbot_envs.msg import EnvStepAction, EnvStepGoal
 from willbot_envs.srv import Seed, SeedRequest
 from willbot_envs.srv import Init, InitRequest
 from willbot_envs.srv import Close, CloseRequest
+from willbot_envs.srv import Step, StepRequest
 
 
 class EnvironmentClient(gym.Env):
@@ -41,11 +42,11 @@ class EnvironmentClient(gym.Env):
             '/willbot_env/close', Close)
         self._seed_client = rospy.ServiceProxy(
             '/willbot_env/seed', Seed)
+        self._step_client = rospy.ServiceProxy(
+            '/willbot_env/step', Step, persistent=True)            
         self._reset_client = actionlib.SimpleActionClient(
             '/willbot_env/reset', EnvResetAction)
-        self._step_client = actionlib.SimpleActionClient(
-            '/willbot_env/step', EnvStepAction)
-
+            
         self._init_client.wait_for_service(timeout=5.0)
         resp = self._init_client(
             environment_id, dumps(params))
@@ -56,23 +57,10 @@ class EnvironmentClient(gym.Env):
         episode is reached, you are responsible for calling `reset()`
         to reset this environment's state."""
 
-        goal = EnvStepGoal(
-            session_id=self._session_id,
-            action=dumps(action)
-        )
-        self._step_client.send_goal(goal)
+        result = self._step_client(
+            session_id=self._session_id, 
+            action=dumps(action))
 
-        finished = self._step_client.wait_for_result(rospy.Duration(30.0))
-        if not finished:
-            if rospy.core.is_shutdown():
-                raise rospy.exceptions.ROSInterruptException("rospy shutdown")
-            raise RuntimeError('Environment server not responding')
-
-        state = self._step_client.get_state()
-        if state != GoalStatus.SUCCEEDED:
-            raise RuntimeError(self._step_client.get_goal_status_text())
-
-        result = self._step_client.get_result()
         observation = loads(result.observation)
         reward = result.reward
         done = result.done
@@ -89,7 +77,7 @@ class EnvironmentClient(gym.Env):
         )
         self._reset_client.send_goal(goal)
 
-        finished = self._reset_client.wait_for_result(rospy.Duration(30.0))
+        finished = self._reset_client.wait_for_result(rospy.Duration(180.0))
         if not finished:
             if rospy.core.is_shutdown():
                 raise rospy.exceptions.ROSInterruptException("rospy shutdown")
@@ -118,8 +106,6 @@ class EnvironmentClient(gym.Env):
         """Override _close in your subclass to perform any necessary cleanup."""
 
         if self._session_id != -1:
-            self._reset_client.cancel_all_goals()
-            self._step_client.cancel_all_goals()
             self._close_client(self._session_id)
             self._session_id = -1
 
