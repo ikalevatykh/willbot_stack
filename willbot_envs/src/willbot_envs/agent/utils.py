@@ -22,7 +22,7 @@ class Frame():
         else:
             self.q = orn
 
-    def __mult__(self, other):
+    def __mul__(self, other):
         '''Frame multiplication
 
         Arguments:

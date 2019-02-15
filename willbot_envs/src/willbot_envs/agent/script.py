@@ -9,23 +9,29 @@ class ScriptAgent():
     '''
 
     def __init__(self, rate, state):
-        self._max_tool_vels = 0.1, 0.01
+        self._max_tool_vels = 0.05, 0.25
         self._max_grip_vel = 1.0
         self._dt = 1.0 / rate
 
         # get current tool position
         self._frame = Frame(
             state.get('tool_position'),
-            state.get('tool_orientation', None)
-        )
+            state.get('tool_orientation', None))
+        # accumulate action signals
+        self._action = dict(
+            linear_velocity=[0, 0, 0],
+            angular_velocity=[0, 0, 0],
+            grip_velocity=0.0)
         # script can have many stages: move to a, grasp, move to b, ...
         self._stages = []
 
     def move(self, pos=None, orn=None):
         '''Move arm tool to an absolute postion'''
-        p = pos or self._frame.p
-        q = orn or self._frame.q
-        frame = Frame(p, q)
+        if pos is None:
+            pos = self._frame.p
+        if orn is None:
+            orn = self._frame.q
+        frame = Frame(pos, orn)
         self._stages.append(
             LinearMove(self._dt, self._frame, frame, self._max_tool_vels))
         self._frame = frame
@@ -73,20 +79,15 @@ class ScriptAgent():
             bool, dict -- done flag and next action
         '''
 
-        action = dict(
-            linear_velocity=[0, 0, 0],
-            angular_velocity=[0, 0, 0],
-            grip_velocity=0.0)
-
         if self._stages:
-            s_done, s_act = \
+            done, act = \
                 self._stages[0].get_action(state)
-            if s_done:
+            if done:
                 self._stages.pop(0)
-            action.update(s_act)
+            self._action.update(act)
 
         done = not self._stages
-        return done, action
+        return done, self._action
 
 
 class LinearMove():
@@ -116,7 +117,10 @@ class GripperMove():
         else:
             self._v = -max_vel
 
-    def get_action(self, t, state):
-        done = state['grip_velocity'] == 0
-        act = dict(grip_velocity=0.0 if done else self._v)
+    def get_action(self, state):
+        if 'object_grasped' in state:
+            done = state['object_grasped']
+        else:
+            done = state['grip_velocity'] == 0
+        act = dict(grip_velocity=self._v)
         return done, act
