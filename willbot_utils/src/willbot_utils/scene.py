@@ -1,5 +1,13 @@
 import rospy
 
+try:
+    from pyassimp import pyassimp
+    use_pyassimp = True
+except:
+    # In 16.04, pyassimp is busted
+    # https://bugs.launchpad.net/ubuntu/+source/assimp/+bug/1589949
+    use_pyassimp = False
+
 from geometry_msgs.msg import Pose, PoseStamped, Point
 from moveit_msgs.msg import CollisionObject, AttachedCollisionObject
 from moveit_msgs.msg import PlanningScene, PlanningSceneComponents, ObjectColor
@@ -68,6 +76,23 @@ class Scene(object):
         self._apply_scene_diff([co])
         return SceneObject(self, co)
 
+    def add_mesh(self, name, path, scale, pos):
+        """Add the mesh to the planning scene.
+
+        Args:
+            @name (str): collision object name
+            @path (str): path to a mesh model
+            @scale (x,y,z): scale
+            @pos (x,y,z): position
+        Returns:
+            CollsionObject interface for the new object
+        """
+        if type(scale) not in [list, tuple]:
+            scale = (scale, ) * 3
+        co = self._make_mesh(name, path, scale, pos)
+        self._apply_scene_diff([co])
+        return SceneObject(self, co)
+
     def attach_object(self, name, link='', touch_links=[]):
         """Given the name of an object existing in the planning scene,
         attach it to a robot link.
@@ -119,11 +144,18 @@ class Scene(object):
         obj = next([obj for obj in scene.world.collision_objects
                     if obj.id == name], None)
         if obj is not None:
-            pose = obj.primitive_poses[0]
-            pose.position.x += dpos[0]
-            pose.position.y += dpos[1]
-            pose.position.z += dpos[2]
-            co = self._move_command(name, pose)
+            for pose in obj.primitive_poses:
+                pose.position.x += dpos[0]
+                pose.position.y += dpos[1]
+                pose.position.z += dpos[2]
+            for pose in obj.mesh_poses:
+                pose.position.x += dpos[0]
+                pose.position.y += dpos[1]
+                pose.position.z += dpos[2]
+            co = self._move_command(
+                name,
+                prim_poses=obj.primitive_poses,
+                mesh_poses=obj.mesh_poses)
             self._apply_scene_diff([co])
 
     def remove_object(self, name):
@@ -148,25 +180,55 @@ class Scene(object):
         sp = SolidPrimitive()
         sp.type = SolidPrimitive.BOX
         sp.dimensions = size
-        return self._make_solid(
-            name, sp, self._make_pose(pos))
+        return self._add_command(
+            name, self._make_pose(pos), solid=sp)
 
-    def _make_solid(self, name, solid, pose):
+    def _make_mesh(self, name, path, scale, pos):
+        if not use_pyassimp:
+            raise RuntimeError('pyassimp is broken, cannot load meshes')
+
+        scene = pyassimp.load(path)
+        if not scene.meshes:
+            pyassimp.release(scene)
+            raise RuntimeError('Unable to load mesh "{}"'.format(path))
+        mesh = Mesh()
+        for face in scene.meshes[0].faces:
+            triangle = MeshTriangle()
+            if len(face.indices) == 3:
+                triangle.vertex_indices = list(face.indices)
+            mesh.triangles.append(triangle)
+        for vertex in scene.meshes[0].vertices:
+            point = Point()
+            point.x = vertex[0] * scale[0]
+            point.y = vertex[1] * scale[1]
+            point.z = vertex[2] * scale[2]
+            mesh.vertices.append(point)
+        pyassimp.release(scene)
+
+        return self._add_command(
+            name, self._make_pose(pos), mesh=mesh)
+
+    def _add_command(self, name, pose, solid=None, mesh=None):
         co = CollisionObject()
         co.header.stamp = rospy.Time.now()
         co.header.frame_id = self._planning_frame
         co.id = name
-        co.primitives.append(solid)
-        co.primitive_poses.append(pose)
+        if solid is not None:
+            co.primitives.append(solid)
+            co.primitive_poses.append(pose)
+        if mesh is not None:
+            co.meshes.append(mesh)
+            co.mesh_poses.append(pose)
         co.operation = CollisionObject.ADD
         return co
 
-    def _move_command(self, name, pose):
+    def _move_command(self, name, prim_poses=[], mesh_poses=[]):
         co = CollisionObject()
         co.header.stamp = rospy.Time.now()
         co.header.frame_id = self._planning_frame
         co.id = name
-        co.primitive_poses.append(pose)
+        co.primitive_poses = prim_poses
+        co.mesh_poses = mesh_poses
         co.operation = CollisionObject.MOVE
         return co
 
