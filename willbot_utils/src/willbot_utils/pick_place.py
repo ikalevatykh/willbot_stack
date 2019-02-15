@@ -1,3 +1,4 @@
+import numpy as np
 import rospy
 
 
@@ -29,14 +30,15 @@ class TopPickPlacePlan(object):
         return True
 
     def _pick(self, pick_pos, pick_orn=None):
-        upper_pos = [pick_pos[0], pick_pos[1], pick_pos[2] + 0.1]
+        upper_pos = np.add(pick_pos, [0, 0, 0.1])
+        grasp_pos = np.add(pick_pos, [0, 0, 0.0])
 
         if not self._hand.open():
             return False
 
         plan = self._arm.cartesian()
         plan.move(upper_pos, pick_orn)
-        plan.move(pick_pos, pick_orn)
+        plan.move(grasp_pos, pick_orn)
         if not plan.execute():
             return False
 
@@ -54,11 +56,12 @@ class TopPickPlacePlan(object):
         return plan.execute()
 
     def _place(self, place_pos, place_orn=None):
-        upper_pos = [place_pos[0], place_pos[1], place_pos[2] + 0.1]
-        above_pos = [place_pos[0], place_pos[1], place_pos[2] + 0.002]
+        upper_pos = np.add(place_pos, [0, 0, 0.1])
+        release_pos = np.add(place_pos, [0, 0, 0.002])
+
         plan = self._arm.cartesian()
         plan.move(upper_pos, place_orn)
-        plan.move(above_pos, place_orn)
+        plan.move(release_pos, place_orn)
         if not plan.execute():
             return False
 
