@@ -26,8 +26,21 @@ class UR5(moveit_commander.MoveGroupCommander):
     def get_current_position(self):
         """Returns a list of 3 elements defining the [x, y, z] of the end-effector."""
         pose = self.get_current_pose()
-        vec = pose.pose.position
-        return [vec.x, vec.y, vec.z]
+        p = pose.pose.position
+        return [p.x, p.y, p.z]
+
+    def get_current_quaternion(self):
+        """Returns a list of 4 quaternion elements wxyz of the end-effector."""
+        pose = self.get_current_pose()
+        q = pose.pose.orientation
+        return [q.w, q.x, q.y, q.z]
+
+    def get_current_pos_orn(self):
+        """Returns a tuple of position xyz and orientation wxyz of the end-effector."""
+        pose = self.get_current_pose()
+        p = pose.pose.position
+        q = pose.pose.orientation
+        return (p.x, p.y, p.z), (q.w, q.x, q.y, q.z)
 
     def joint_move(self, pos, orn=None, wait=True):
         """Plan and execute motion in joint space."""
