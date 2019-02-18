@@ -70,9 +70,10 @@ class EnvironmentServer(object):
                 raise RuntimeError('Wrong session')
 
             self._environment.close()
+            del self._environment
             self._environment = None
 
-            return CloseResponse()
+            return CloseResponse(success=True)
         except Exception as e:
             rospy.logerr('Close exception: %s', e)
             if self._debug:
@@ -120,8 +121,6 @@ class EnvironmentServer(object):
 
     def step_cb(self, req):
         try:
-            rospy.logdebug('step %s', req.action)
-
             if req.session_id != self._session_id:
                 raise RuntimeError('Wrong session')
 

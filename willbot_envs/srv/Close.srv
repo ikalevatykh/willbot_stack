@@ -2,3 +2,5 @@
 int32 session_id
 
 ---
+
+bool success

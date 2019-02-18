@@ -43,10 +43,10 @@ class EnvironmentClient(gym.Env):
         self._seed_client = rospy.ServiceProxy(
             '/willbot_env/seed', Seed)
         self._step_client = rospy.ServiceProxy(
-            '/willbot_env/step', Step, persistent=True)            
+            '/willbot_env/step', Step, persistent=True)
         self._reset_client = actionlib.SimpleActionClient(
             '/willbot_env/reset', EnvResetAction)
-            
+
         self._init_client.wait_for_service(timeout=5.0)
         resp = self._init_client(
             environment_id, dumps(params))
@@ -58,7 +58,7 @@ class EnvironmentClient(gym.Env):
         to reset this environment's state."""
 
         result = self._step_client(
-            session_id=self._session_id, 
+            session_id=self._session_id,
             action=dumps(action))
 
         observation = loads(result.observation)
@@ -104,6 +104,8 @@ class EnvironmentClient(gym.Env):
 
     def close(self):
         """Override _close in your subclass to perform any necessary cleanup."""
+
+        self._step_client.close()
 
         if self._session_id != -1:
             self._close_client(self._session_id)
