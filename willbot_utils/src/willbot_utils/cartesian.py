@@ -58,9 +58,9 @@ class CartesianPlan(object):
         plan.joint_trajectory.points = points
 
         if not self._arm.execute(plan, wait):
-            current = self._arm.get_current_joint_values
+            current = self._arm.get_current_joint_values()
             desired = plan.joint_trajectory.points[-1].positions
-            if not np.allclose(current, desired, atol=0.01):
+            if not np.allclose(current, desired, atol=0.02):
                 return False
 
         return True
