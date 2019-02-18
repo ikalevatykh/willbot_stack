@@ -17,7 +17,7 @@ class PickEnv(WillbotEnv):
 
         cube_pos = (0.30, 0.00, 0.041)
         cube_dim = (0.06, 0.06, 0.06)
-        self._scene.add_box(
+        self._box = self._scene.add_box(
             'box', cube_dim, cube_pos, color=(1, 0, 0))
         self._cube_position = cube_pos
 
@@ -28,7 +28,7 @@ class PickEnv(WillbotEnv):
         cube_limits = [0.3, -0.20, 0.041], [0.7, 0.20, 0.041]
         cube_pos = self._np_random.uniform(*cube_limits)
 
-        plan = self._arm.pick_place(self._hand, 'box')
+        plan = self._arm.pick_place(self._box)
         plan.pick(self._cube_position)
         plan.place(cube_pos)
         if not plan.execute():

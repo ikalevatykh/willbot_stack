@@ -32,7 +32,7 @@ class ReachEnv(WillbotEnv):
         # add target model to a scene
         dim = self._target_size
         cube_pos = (0.30, 0.00, 0.012 + dim / 2)
-        cube_dim = (dim, dim, dim)
+        cube_dim = (dim, dim, dim - 0.004)
         if self._update_scene:
             self._target = self._scene.add_box('target', cube_dim, cube_pos)
         self._target_position = (0.30, 0.00, 0.05)
@@ -81,6 +81,6 @@ class ReachEnv(WillbotEnv):
     def done(self):
         """True if target and tool in xy plane is close."""
         return np.allclose(
-            self._target_position[:2],
+            self._target_position.tolist()[:2],
             self._arm.get_current_position()[:2],
             atol=self._success_tolerance)
