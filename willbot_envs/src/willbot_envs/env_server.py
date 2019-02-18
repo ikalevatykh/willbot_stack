@@ -41,9 +41,12 @@ class EnvironmentServer(object):
 
             if self._environment is not None:
                 self._environment.close()
+                del self._environment
                 self._environment = None
 
-            env_cls = load_env(req.environment_id)
+            env_cls = load_env(
+                req.environment_id,
+                reload_module=self._debug)
             params = loads(req.params)
 
             self._environment = env_cls(**params)
