@@ -65,7 +65,12 @@ class Frame():
 
 
 class TrapVelocityProfile():
-    '''Trapezoid velocity profile'''
+    '''Trapezoid velocity profile
+          __________
+         /           \
+        /             \
+       0 tacc    tdec tend
+    '''
 
     def __init__(self, t_acc, *dist_vel_pairs):
         '''Constructor
@@ -95,19 +100,20 @@ class TrapVelocityProfile():
         '''Call
 
         Arguments:
-            t {[type]} -- time at what get profile value
+            t {float} -- time at what get profile value
 
         Returns:
-            float -- profile level at time t (0..1)
+            np.array -- velocities at time t
         '''
 
-        if t > self._t_end:
-            return self._vels * 0.0
+        k = 0.0
         if t < self._t_acc:
-            return self._vels * (t / self._t_acc)
-        if t > self._t_dec:
-            return self._vels * (1.0 - (t - self._t_dec) / self._t_acc)
-        return self._vels
+            k = t / self._t_acc
+        elif t < self._t_dec:
+            k = 1.0
+        elif t < self._t_end:
+            k = 1.0 - (t - self._t_dec) / self._t_acc
+        return self._vels * k
 
 
 class RectVelocityProfile():
@@ -122,6 +128,7 @@ class RectVelocityProfile():
 
         t_end = [np.linalg.norm(d / v) for d, v in dist_vel_pairs]
         self._t_end = t_end  # time to stop
+        self._vels = np.array([v for _, v in dist_vel_pairs])
 
     @property
     def time_length(self):
@@ -131,12 +138,12 @@ class RectVelocityProfile():
         '''Call
 
         Arguments:
-            t {[type]} -- time at what get profile value
+            t {float} -- time at what get profile value
 
         Returns:
-            float -- profile level at time t (0..1)
+            np.array -- velocities at time t
         '''
 
         if t > self._t_end:
-            return 0.0
-        return 1.0
+            return np.zeros_like(self._vels)
+        return self._vels
