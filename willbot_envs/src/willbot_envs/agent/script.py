@@ -5,6 +5,7 @@ class ScriptAgent():
     '''Simple motion script.
 
     Arguments:
+        rate {float} -- script update rate
         state {dict} -- environment state
     '''
 
