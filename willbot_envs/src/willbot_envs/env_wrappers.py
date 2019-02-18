@@ -16,7 +16,7 @@ class CameraObserver(ObservationWrapper):
 
     def observation(self, observation):
         observation[self._key] = self._stream.latest(self._encoding)
-        return observation        
+        return observation
 
 
 class JointStateObserver(ObservationWrapper):
@@ -40,7 +40,8 @@ class JointStateObserver(ObservationWrapper):
             # TODO: use msg.name to get joint indicies for ArmNames
             observation['joint_position'] = msg.position[:6]
             observation['joint_velocity'] = msg.velocity[:6]
-            observation['grip_width'] = msg.position[6]
+            observation['grip_position'] = msg.position[6]
+            observation['grip_velocity'] = msg.velocity[6]
         return observation
 
 # TODO: ToolStateObserver
