@@ -1,6 +1,9 @@
  <launch>
 
     <arg name="camera" />
+
+    <!-- customize logging settings for standalone running -->
+    <include file="$(find willbot_bringup)/launch/customize_log.launch"/>
  
     <!-- kinect -->
     <group if="$(eval arg('camera') == 'kinect')">

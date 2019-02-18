@@ -9,6 +9,9 @@
 
   <arg name="config" default="true"/>
 
+  <!-- customize logging settings for standalone running -->
+  <include file="$(find willbot_bringup)/launch/customize_log.launch"/>
+
   <include file="$(find willbot_moveit_config)/launch/moveit_rviz.launch">
     <arg name="config" value="$(arg config)"/>
   </include>
