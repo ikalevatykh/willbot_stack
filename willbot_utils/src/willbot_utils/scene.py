@@ -141,8 +141,8 @@ class Scene(object):
             @spos (x,y,z): shift
         """
         scene = self._get_scene()
-        obj = next([obj for obj in scene.world.collision_objects
-                    if obj.id == name], None)
+        obj = next((obj for obj in scene.world.collision_objects
+                    if obj.id == name), None)
         if obj is not None:
             for pose in obj.primitive_poses:
                 pose.position.x += dpos[0]
