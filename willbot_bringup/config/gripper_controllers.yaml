@@ -8,10 +8,10 @@ hand_gripper_controller:
    type: position_controllers/GripperActionController
    joint: hand_finger_middle_joint_1
    action_monitor_rate: 20
-   goal_tolerance: 0.1
+   goal_tolerance: 0.01
    max_effort: 100
    stall_velocity_threshold: 0.001
-   stall_timeout: 1.0  
+   stall_timeout: 0.1
 
 ## joint trajectory controller (for individual finger control)
 hand_trajectory_controller:
@@ -23,7 +23,7 @@ hand_trajectory_controller:
    - hand_palm_finger_1_joint
    constraints:
       goal_time: 0.6
-      stopped_velocity_tolerance: 0.05
+      stopped_velocity_tolerance: 0.01
       hand_finger_1_joint_1: {trajectory: 0.01, goal: 0.01}
       hand_finger_2_joint_1: {trajectory: 0.01, goal: 0.01}
       hand_finger_middle_joint_1: {trajectory: 0.01, goal: 0.01}

@@ -59,6 +59,17 @@ class RobotiqHand(object):
     def is_object_held(self):
         return self.position < 0.6
 
+    @property
+    def width(self):
+        '''Distance between finger tips assuming parallel grasp.
+
+        Returns:
+            float -- width
+        '''
+
+        angle = self.position
+        return 0.09 - math.sin(angle - 0.52) * 2 * 0.1
+
     def move(self, position, wait=True):
         self._gripper.set_start_state_to_current_state()
         self._gripper.set_joint_value_target({
@@ -78,15 +89,19 @@ class RobotiqHand(object):
         return self.move(self._close_position, wait)
 
     def parallel_grasp(self, width, wait=True):
-        """Grasp an object assuming parallel grasp.
+        '''Grasp an object assuming parallel grasp.
 
-        Args:
-            width (float) : a grasping object width.
-            wait (bool) : wait motion finished
+        Arguments:
+            width {float} -- a grasping object width
+
+        Keyword Arguments:
+            wait {bool} -- wait motion finished (default: {True})
+
         Returns:
-            bool: True if finger stopped at target width.
-        """
-        angle = 0.52 + math.asin((0.091 - 0.01 - width) / 2 / 0.1)
+            bool -- True if finger stopped at target width
+        '''
+
+        angle = 0.52 + math.asin((0.09 - width) / 2 / 0.1)
         return self.move(angle, wait)
 
     def stop(self):

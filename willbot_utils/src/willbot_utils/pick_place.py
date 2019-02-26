@@ -10,6 +10,7 @@ class TopPickPlacePlan(object):
         self._hand = hand
         self._object = target_object
         self._object_width = 0
+        self._grasp_tolerance = 0.01
         self._pick_position = None
         self._place_position = None
 
@@ -47,8 +48,10 @@ class TopPickPlacePlan(object):
                 link=self._arm.get_end_effector_link(),
                 touch_links=self._hand.links)
 
-        if not self._hand.parallel_grasp(self._object_width):
-            if self._object_width > 0:
+        grasped = self._hand.parallel_grasp(self._object_width)
+        if not grasped and self._object_width:
+            err = self._hand.whidth - self._object_width
+            if np.abs(err) > self._grasp_tolerance:
                 return False
 
         plan = self._arm.cartesian()
