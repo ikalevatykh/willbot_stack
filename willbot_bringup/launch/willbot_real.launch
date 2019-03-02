@@ -9,6 +9,7 @@
       [robot_ip:=<value>] [gripper_ip:=<value>] 
       [camera:=<kinect|kinect2|realsense|none>]
       [init_gripper:=<true|false>]
+      [speed_preset:=<normal|fast>]
 -->
 <launch>
   <arg name="setup" default="paris"/>
@@ -16,6 +17,9 @@
   <arg if="$(eval setup == 'paris')"    name="robot_ip" default="192.168.1.20" />
   <arg if="$(eval setup == 'grenoble')" name="robot_ip" default="192.168.1.1" />  
   <arg name="gripper_ip" default="192.168.1.11"/>
+
+  <!-- Arm speed limits preset, one of normal, -->
+  <arg name="speed_preset" default="normal" />
 
   <arg name="init_gripper" default="true" />
 
@@ -55,7 +59,10 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
   <!-- moveit -->
-  <include file="$(find willbot_moveit_config)/launch/willbot_moveit_planning_execution.launch" />
+  <include file="$(find willbot_moveit_config)/launch/willbot_moveit_planning_execution.launch">
+    <!--arg name="debug" default="$(arg debug)" /-->
+    <arg name="speed_limits" value="$(arg speed_preset)"/>
+  </include>
 
   <!-- camera -->
   <include file="$(find willbot_bringup)/launch/camera_bringup.launch">
