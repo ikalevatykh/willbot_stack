@@ -50,7 +50,7 @@ class TopPickPlacePlan(object):
 
         grasped = self._hand.parallel_grasp(self._object_width)
         if not grasped and self._object_width:
-            err = self._hand.whidth - self._object_width
+            err = self._hand.width - self._object_width
             if np.abs(err) > self._grasp_tolerance:
                 return False
 
