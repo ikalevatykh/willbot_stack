@@ -1,5 +1,9 @@
 <launch>
-  <include file="$(find willbot_moveit_config)/launch/planning_context.launch" />
+  <arg name="speed_limits" default="normal" />
+
+  <include file="$(find willbot_moveit_config)/launch/planning_context.launch" >
+    <arg name="speed_limits" value="$(arg speed_limits)"/>
+  </include>
 
   <!-- GDB Debug Option -->
   <arg name="debug" default="false" />
