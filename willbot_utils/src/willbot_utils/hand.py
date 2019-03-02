@@ -1,7 +1,22 @@
 import math
+import numpy as np
 import rospy
 import moveit_commander
 import dynamic_reconfigure.client
+
+
+class _ParrallelGraspKinematics(object):
+    def __init__(self):
+        self._zero_width = 0.07
+        self._zero_angle = 0.52
+        self._finger_len = 0.095
+
+    def angle_to_width(self, angle):
+        return self._zero_width + math.sin(self._zero_angle - angle) * self._finger_len * 2
+
+    def width_to_angle(self, width):
+        width = np.clip(width, 0.0, 0.16)
+        return self._zero_angle + math.asin((self._zero_width - width) / self._finger_len / 2)
 
 
 class RobotiqHand(object):
@@ -10,6 +25,7 @@ class RobotiqHand(object):
         self._close_position = 0.95
 
         self._gripper = moveit_commander.MoveGroupCommander(group_name)
+        self._kinematics = _ParrallelGraspKinematics()
         self._client = dynamic_reconfigure.client.Client(group_name, timeout=5)
         self._config = self._client.get_configuration(timeout=5)
 
@@ -31,6 +47,22 @@ class RobotiqHand(object):
     def mode(self, value):
         self._config['mode'] = value
         self._client.update_configuration(self._config)
+
+    @property
+    def open_position(self):
+        return self._open_position
+
+    @open_position.setter
+    def open_position(self, value):
+        self._open_position = value
+
+    @property
+    def open_width(self):
+        return self._kinematics.angle_to_width(self._open_position)
+
+    @open_width.setter
+    def open_width(self, value):
+        self._open_position = self._kinematics.width_to_angle(value)
 
     @property
     def target_velocity(self):
@@ -56,10 +88,6 @@ class RobotiqHand(object):
         return joints[1]
 
     @property
-    def is_object_held(self):
-        return self.position < 0.6
-
-    @property
     def width(self):
         '''Distance between finger tips assuming parallel grasp.
 
@@ -67,10 +95,15 @@ class RobotiqHand(object):
             float -- width
         '''
 
-        angle = self.position
-        return 0.09 - math.sin(angle - 0.52) * 2 * 0.1
+        width = self._kinematics.angle_to_width(self.position)
+        return width
 
-    def move(self, position, wait=True):
+    def move(self, position, velocity=0, force=0, wait=True):
+        if velocity:
+            self.target_velocity = velocity
+        if force:
+            self.target_force = force
+        position = np.clip(position, 0.05, 6.0)
         self._gripper.set_start_state_to_current_state()
         self._gripper.set_joint_value_target({
             'hand_finger_middle_joint_1':
@@ -88,11 +121,11 @@ class RobotiqHand(object):
     def close(self, wait=True):
         return self.move(self._close_position, wait)
 
-    def parallel_grasp(self, width, wait=True):
-        '''Grasp an object assuming parallel grasp.
+    def parallel_move(self, width, wait=True):
+        '''Move fingers assuming parallel grasp.
 
         Arguments:
-            width {float} -- a grasping object width
+            width {float} -- a width between fingers
 
         Keyword Arguments:
             wait {bool} -- wait motion finished (default: {True})
@@ -100,8 +133,7 @@ class RobotiqHand(object):
         Returns:
             bool -- True if finger stopped at target width
         '''
-
-        angle = 0.52 + math.asin((0.09 - width) / 2 / 0.1)
+        angle = self._kinematics.width_to_angle(width)
         return self.move(angle, wait)
 
     def stop(self):
