@@ -8,14 +8,19 @@ from willbot_utils.camera import ImageListener
 
 
 class CameraObserver(ObservationWrapper):
-    def __init__(self, env, key, topic, encoding=None):
+    def __init__(self, env, key, topic, encoding=None, timeout=rospy.Duration(0.5)):
         super(CameraObserver, self).__init__(env)
         self._key = key
         self._stream = ImageListener(topic)
         self._encoding = encoding
+        self._timeout = timeout
 
     def observation(self, observation):
-        observation[self._key] = self._stream.latest(self._encoding)
+        stamp, img = self._stream.latest(self._encoding, with_time=True)
+        if rospy.Time.now() - stamp > self._timeout:
+            raise RuntimeError(
+                'Image from camera "{}" expired'.format(self._key))
+        observation[self._key] = img
         return observation
 
 

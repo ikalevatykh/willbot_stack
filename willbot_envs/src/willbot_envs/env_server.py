@@ -139,6 +139,7 @@ class EnvironmentServer(object):
             rospy.logerr('Step exception: %s', e)
             if self._debug:
                 traceback.print_exc(file=sys.stdout)
+            raise e                
 
     def preempt_cb(self):
         try:
