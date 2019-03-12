@@ -6,6 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   robotiq_3f_gripper_control
   ur_modern_driver
   willbot_description
+  freenect_launch
+  kinect2_bridge
 )
 
 catkin_package(
