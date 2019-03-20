@@ -11,7 +11,11 @@ Adapter between arm and gripper for Grenoble setup.
     <xacro:property name="adapter_radius" value="0.040" />
     <xacro:property name="adapter_length" value="0.025" />
     <xacro:property name="adapter_weight" value="0.100" />
-    
+
+    <xacro:property name="tube_length" value="0.100" />
+    <xacro:property name="tube_radius" value="0.022" />
+    <xacro:property name="tube_remove" value="0.100" />
+
     <joint name="${prefix}tool0-adapter_fixed_joint" type="fixed">
       <origin xyz="0 0 0" rpy="0 0 ${-pi/4}"/>
       <parent link="${prefix}tool0"/>
@@ -40,6 +44,12 @@ Adapter between arm and gripper for Grenoble setup.
           <box size="0.11 0.09 0.07" />
         </geometry>
       </collision>
+      <collision>
+        <origin xyz="${tube_remove} 0.0 ${-tube_length/2.0 + 0.02}" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${tube_radius}" length="${tube_length}"/>
+        </geometry>
+      </collision>
       <xacro:cylinder_inertial radius="${adapter_radius}" length="${adapter_length}" mass="${adapter_weight}">
         <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
       </xacro:cylinder_inertial>
@@ -59,7 +69,7 @@ Adapter between arm and gripper for Grenoble setup.
       <origin xyz="0 0 ${0.045}" rpy="${pi/2} 0 0"/>
       <parent link="${prefix}hand_base"/>
       <child link="${prefix}hand_palm"/>
-    </joint>    
+    </joint>
 
   </xacro:macro>
 
