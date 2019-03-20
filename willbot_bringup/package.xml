@@ -17,7 +17,7 @@
   <build_depend>freenect_stack</build_depend>
   <build_depend>kinect2_bridge</build_depend>
   <build_export_depend>controller_manager</build_export_depend>
-  <build_export_depend>robotsiq_3f_gripper_control</build_export_depend>
+  <build_export_depend>robotiq_3f_gripper_control</build_export_depend>
   <build_export_depend>ur_modern_driver</build_export_depend>
   <build_export_depend>willbot_description</build_export_depend>
   <build_export_depend>freenect_stack</build_export_depend>
