@@ -36,17 +36,17 @@
     <arg name="setup" value="$(arg setup)"/>
   </include>
 
-  <!-- bringup arm -->
-  <include file="$(find willbot_bringup)/launch/ur_ros_control.launch">
-    <arg name="robot_ip" value="$(arg robot_ip)"/>
-    <arg name="arm_name" value="arm" />
-  </include>
-
   <!-- bringup gripper -->
   <include file="$(find willbot_bringup)/launch/gripper_ros_control.launch">
     <arg name="gripper_ip" value="$(arg gripper_ip)"/>
     <arg name="gripper_name" value="gripper" />
     <arg name="init_gripper" value="$(arg init_gripper)" />
+  </include>
+
+  <!-- bringup arm -->
+  <include file="$(find willbot_bringup)/launch/ur_ros_control.launch">
+    <arg name="robot_ip" value="$(arg robot_ip)"/>
+    <arg name="arm_name" value="arm" />
   </include>
 
   <!-- combine joint states from arm and hand -->
