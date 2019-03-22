@@ -10,7 +10,7 @@
   <license>LGPLv3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>willbot_utils</exec_depend>
+  <depend>willbot_utils</depend>
   <exec_depend>python-numpy</exec_depend>
 
 </package>
