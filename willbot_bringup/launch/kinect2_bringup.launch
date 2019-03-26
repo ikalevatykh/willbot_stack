@@ -6,6 +6,16 @@
     kinect2_bringup.launch param:=<value>
 -->
 <launch>
+  <arg name="sensor_id" default="default"/>
+
+  <arg if="$(eval sensor_id == 'default')" name="base_name" default="kinect2"/>
+  <arg if="$(eval sensor_id == 'default')" name="sensor" default=""/>
+
+  <arg if="$(eval sensor_id == 'paris_1')" name="base_name" default="kinect2_n1"/>
+  <arg if="$(eval sensor_id == 'paris_1')" name="sensor" default="001419663847"/>
+
+  <arg if="$(eval sensor_id == 'paris_2')" name="base_name" default="kinect2_n2"/>
+  <arg if="$(eval sensor_id == 'paris_2')" name="sensor" default="001792263847"/>
 
   <arg name="fps_limit" default="-1.0" />
   <arg name="depth_method" default="cuda" />
@@ -18,6 +28,8 @@
   <arg name="base_name_tf" default="camera" />
 
   <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
+    <arg name="base_name" value="$(arg base_name)"/>
+    <arg name="sensor" value="$(arg sensor)"/>
     <arg name="fps_limit" value="$(arg fps_limit)"/>
     <arg name="depth_method" value="$(arg depth_method)"/>
     <arg name="reg_method" value="$(arg reg_method)"/>
