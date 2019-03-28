@@ -37,7 +37,9 @@
 
   <!--  initialize gripper if needed -->
   <group if="$(arg init_gripper)">
-    <node pkg="willbot_bringup" type="init_gripper.py" name="init_gripper" />
+    <node pkg="willbot_bringup" type="init_gripper.py" name="init_gripper" output="screen">
+        <param name="gripper_name" value="$(arg gripper_name)" />
+    </node>
   </group>
 
 </launch>
