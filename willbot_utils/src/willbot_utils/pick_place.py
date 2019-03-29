@@ -48,7 +48,7 @@ class TopPickPlacePlan(object):
                 link=self._arm.get_end_effector_link(),
                 touch_links=self._hand.links)
 
-        grasped = self._hand.parallel_grasp(self._object_width)
+        grasped = self._hand.parallel_move(self._object_width)
         if not grasped and self._object_width:
             err = self._hand.width - self._object_width
             if np.abs(err) > self._grasp_tolerance:
