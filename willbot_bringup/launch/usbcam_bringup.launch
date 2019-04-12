@@ -1,21 +1,24 @@
 <launch>
-    <arg name="device_ids" default="0" />
-    <arg name="device_id" default="$(eval str(device_ids).split(',')[0])" />
-    
-    <arg name="video_device" default="/dev/video$(arg device_id)" /> 
-    <arg name="view" default="False" />
+    <arg name="device_id" default="0" />
+
+    <arg name="video_device" default="/dev/video$(arg device_id)" />
+    <arg name="camera_frame_id" default="usb_cam_$(arg device_id)" />
     <arg name="image_width" default="640" />
     <arg name="image_height" default="480" />
-    <arg name="framerate" default="30" />       
+    <arg name="framerate" default="30" />
+    <arg name="pixel_format" default="mjpeg" />
+    <arg name="io_method" default="mmap" />
+
+    <arg name="view" default="False" />
 
     <node name="usb_cam_$(arg device_id)" pkg="usb_cam" type="usb_cam_node" output="screen" >
         <param name="video_device" value="$(arg video_device)" />
         <param name="image_width" value="$(arg image_width)" />
         <param name="image_height" value="$(arg image_height)" />
-        <param name="framerate" value="$(arg framerate)" />        
-        <param name="pixel_format" value="mjpeg" />
-        <param name="camera_frame_id" value="usb_cam_$(arg device_id)" />
-        <param name="io_method" value="mmap"/>
+        <param name="framerate" value="$(arg framerate)" />
+        <param name="pixel_format" value="$(arg pixel_format)" />
+        <param name="io_method" value="$(arg io_method)"/>
+        <param name="camera_frame_id" value="$(arg camera_frame_id)" />
     </node>
 
     <group if="$(arg view)">
@@ -23,14 +26,6 @@
             <remap from="image" to="/usb_cam_$(arg device_id)/image_raw"/>
             <param name="autosize" value="true" />
         </node>
-    </group>
-
-    <!-- Recursively start other cameras -->
-    <group if="$(eval len(str(device_ids).split(',')) > 1)">
-        <include file="$(find willbot_bringup)/launch/usbcam_bringup.launch">
-            <arg name="device_ids" value="$(eval ','.join(str(device_ids).split(',')[1:]))"/>
-            <arg name="view" value="$(arg view)"/>
-        </include>
     </group>
 
 </launch>
