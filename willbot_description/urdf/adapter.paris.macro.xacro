@@ -71,6 +71,22 @@ Adapter between arm and gripper for Grenoble setup.
       <child link="${prefix}hand_palm"/>
     </joint>
 
+    <!-- vive tracker mount -->
+    <link name="${prefix}tool_mount"/>
+    <link name="${prefix}tool_tracker"/>
+
+    <joint name="${prefix}tool0-tool_mount-fixed_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 ${-pi*5/12}"/> <!-- 115-180 grad -->
+      <parent link="${prefix}tool0"/>
+      <child link="${prefix}tool_mount"/>
+    </joint>
+
+    <joint name="${prefix}tool_mount-tool_tracker-fixed_joint" type="fixed">
+      <origin xyz="0 -0.120 0.004" rpy="0 0 0"/>
+      <parent link="${prefix}tool_mount"/>
+      <child link="${prefix}tool_tracker"/>
+    </joint>
+
   </xacro:macro>
 
 </robot>

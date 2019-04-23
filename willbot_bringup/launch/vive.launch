@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+    <rosparam param="/vive/world_offset">[0.788, 2.185, 1.285]</rosparam>
+    <rosparam param="/vive/world_yaw">3.14</rosparam>
+
+    <node name="vive_node" pkg="vive_ros" type="vive_node" launch-prefix="$(env HOME)/.steam/ubuntu12_32/steam-runtime/run.sh" 
+        output="screen" required="true"/>
+
+</launch>
