@@ -9,7 +9,7 @@ Adapter between arm and gripper for Grenoble setup.
   <xacro:macro name="paris_adapter" params="prefix">
 
     <xacro:property name="adapter_radius" value="0.040" />
-    <xacro:property name="adapter_length" value="0.025" />
+    <xacro:property name="adapter_length" value="0.030" />
     <xacro:property name="adapter_weight" value="0.100" />
 
     <xacro:property name="tube_length" value="0.100" />
