@@ -5,6 +5,7 @@ import tf_conversions.posemath as pm
 from pykdl_utils.kdl_kinematics import KDLKinematics
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from urdf_parser_py.urdf import URDF
+from willbot_utils.kinematics import UR5Kinematics, _homogenous
 
 
 class ControllerException(Exception):
@@ -21,22 +22,30 @@ class VelocityController(object):
     def __init__(self, group, workspace):
         self._group = group
         self._workspace = workspace
-        self._x = pm.fromMsg(group.get_current_pose().pose)
-        self._q = group.get_current_joint_values()
 
-        if VelocityController.KIN_CACHE is None:
-            base_link = group.get_planning_frame()
-            end_link = group.get_end_effector_link()
-            robot = URDF.from_parameter_server()
-            kin = KDLKinematics(robot, base_link, end_link)
-            VelocityController.KIN_CACHE = kin
+        base_link = group.get_planning_frame()
+        end_link = group.get_end_effector_link()
+        robot = URDF.from_parameter_server()
+        kin = KDLKinematics(robot, base_link, end_link)
+        VelocityController.KDL_KIN_CACHE = kin
+        VelocityController.KIN_CACHE = UR5Kinematics()
 
         self._kin = VelocityController.KIN_CACHE
-        self._joint_names = self._kin.get_joint_names()
+        self._kdl_kin = VelocityController.KDL_KIN_CACHE
+        self._kin.set_configuration('right up forward')
+        self._joint_names = self._kdl_kin.get_joint_names()
 
         cmd_topic = '/arm/pos_based_pos_traj_controller/command'
-        self._publisher = rospy.Publisher(
-            cmd_topic, JointTrajectory, queue_size=10)
+        self._publisher = rospy.Publisher(cmd_topic, JointTrajectory, queue_size=10)
+
+        self.update_current()
+
+    def update_current(self):
+        self._q = self._group.get_current_joint_values()
+        pos, orn = self._kin.forward(self._q)
+        self._x = pm.fromMatrix(_homogenous(pos, orn))
+        import transforms3d
+        print(transforms3d.euler.quat2euler(orn))
 
     def step(self, dt, lin_vel=(0, 0, 0), rot_vel=(0, 0, 0), check=False, base_time=None):
         q0 = self._q
@@ -67,11 +76,15 @@ class VelocityController(object):
             #    'Target outside workspace bounds: {} / {}'.format(p, self._workspace))
             return
 
-        q1 = self._kin.inverse(pm.toMatrix(X1), q_guess=q0)
+        R, p = X1.M.GetQuaternion(), X1.p
+        orn, pos = R, [p.x(), p.y(), p.z()]
+        q1 = self._kin.inverse(pos, orn, q_init=q0)
         if q1 is None:
             raise ControllerException('IK solution not found')
 
-        q2 = self._kin.inverse(pm.toMatrix(X2), q_guess=q1)
+        R, p = X2.M.GetQuaternion(), X2.p
+        orn, pos = R, [p.x(), p.y(), p.z()]
+        q2 = self._kin.inverse(pos, orn, q_init=q1)
         if q2 is None:
             raise ControllerException('IK solution not found')
 
@@ -110,8 +123,9 @@ class VelocityController(object):
         self._publisher.publish(traj)
 
         rospy.sleep(0.5)
-        self._x = pm.fromMsg(self._group.get_current_pose().pose)
-        self._q = self._group.get_current_joint_values()
+        # self._x = pm.fromMsg(self._group.get_current_pose().pose)
+        # self._q = self._group.get_current_joint_values()
+        self.update_current()
 
     def __enter__(self):
         return self
