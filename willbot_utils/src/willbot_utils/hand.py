@@ -116,10 +116,10 @@ class RobotiqHand(object):
         return self._gripper.go(wait=wait)
 
     def open(self, wait=True):
-        return self.move(self._open_position, wait)
+        return self.move(self._open_position, wait=wait)
 
     def close(self, wait=True):
-        return self.move(self._close_position, wait)
+        return self.move(self._close_position, wait=wait)
 
     def parallel_move(self, width, wait=True):
         '''Move fingers assuming parallel grasp.
@@ -134,7 +134,7 @@ class RobotiqHand(object):
             bool -- True if finger stopped at target width
         '''
         angle = self._kinematics.width_to_angle(width)
-        return self.move(angle, wait)
+        return self.move(angle, wait=wait)
 
     def stop(self):
         self._gripper.stop()
