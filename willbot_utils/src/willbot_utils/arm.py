@@ -6,7 +6,9 @@ from moveit_msgs.msg import PlanningScene
 from moveit_msgs.srv import ApplyPlanningScene
 
 from willbot_utils.cartesian import CartesianPlan
+from willbot_utils.controller_manager import ControllerManager
 from willbot_utils.pick_place import TopPickPlacePlan
+
 
 
 class UR5(moveit_commander.MoveGroupCommander):
@@ -16,12 +18,18 @@ class UR5(moveit_commander.MoveGroupCommander):
         super(UR5, self).__init__(group_name)
         # set default path planner
         self.set_planner_id("RRTConnectkConfigDefault")
+        self._controller_manger = None #ControllerManager('/arm')
         self._hand = hand
 
     @property
     def hand(self):
         """Gripper attached to the arm."""
         return self._hand
+
+    @property
+    def controller_manager(self):
+        """Returns the arm controllers manager interface."""
+        return self._controller_manger
 
     def get_current_position(self):
         """Returns a list of 3 elements defining the [x, y, z] of the end-effector."""
