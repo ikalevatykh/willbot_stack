@@ -9,39 +9,36 @@ class ControllerManager():
     Utility to simplify managing hw controllers.
     """
 
-    def __init__(self, namespace='/', persistent=True):
+    def __init__(self, group='', persistent=True):
         """Initializer
-        
+
         Keyword Arguments:
-            namespace {str} -- controller manager namespace (default: {'/'})
-            persistent {bool} -- use persistent connection (default: {False})
+            group {str} -- controller manager group (default: {''})
+            persistent {bool} -- use persistent connection (default: {True})
         """
+        if group:
+            namespace = '/{}/controller_manager/'.format(group)
+        else:
+            namespace = '/controller_manager/'
+
         self._list_srv = rospy.ServiceProxy(
-            os.path.join(namespace, 'list_controllers'),
-            ListControllers,
-            persistent=persistent)
+            namespace + 'list_controllers', ListControllers, persistent=persistent)
         self._load_srv = rospy.ServiceProxy(
-            os.path.join(namespace, 'load_controller'),
-            LoadController,
-            persistent=persistent)
+            namespace + 'load_controller', LoadController, persistent=persistent)
         self._unload_srv = rospy.ServiceProxy(
-            os.path.join(namespace, 'unload_controller'),
-            UnloadController,
-            persistent=persistent)
+            namespace + 'unload_controller', UnloadController, persistent=persistent)
         self._switch_srv = rospy.ServiceProxy(
-            os.path.join(namespace, 'switch_controller'),
-            SwitchController,
-            persistent=persistent)
+            namespace + 'switch_controller', SwitchController, persistent=persistent)
 
     def list_controllers(self):
         """ Returns a list of controller names/states/types of the
             controllers that are loaded inside the controller_manager.
 
         Returns:
-            list -- list of controller states
+            dict -- dict of controller name,state pairs
         """
         res = self._list_srv.call()
-        return res.controller
+        return {c.name: c for c in res.controller}
 
     def load_controller(self, name):
         """Loads a single controller inside controller_manager
@@ -105,45 +102,46 @@ class ControllerManager():
             rospy.logerr("Service did not process request: " + str(exc))
             return False
 
-    def start_controller(self, name):
+    def start_controller(self, start_name):
         """Starts specified controller.
         If controller not loaded it will be.
         If other running controller claimed the same resources it will be stopped.
 
         Arguments:
-            name {str} -- controller name
+            start_name {str} -- controller name
 
         Returns:
             bool -- indicates if the controllers were started successfully or not
+            list -- stopped controllers names
         """
         controllers = self.list_controllers()
 
-        # do nothing if the controller already started, load if not loaded
-        ctr = next((c for c in controllers if c.name == name), None)
-        if ctr is None:
-            if not self.load_controller(name):
+        if start_name in controllers:
+            # do nothing if the controller already started
+            if controllers[start_name].state == 'running':
+                return True
+        else:
+            # load controller if not loaded
+            if not self.load_controller(start_name):
                 return False
+            # update list
             controllers = self.list_controllers()
-        elif ctr.state == 'running':
-            return True
 
         # find controllers claiming resources required
         # for the starting controller
-        require_resources = ()
-        claimed_resources = {}
-        for c in controllers:
-            resources = [r for cr in c.claimed_resources for r in cr.resources]
-            if c.name == name:
-                require_resources = set(resources)
-            else:
-                claimed_resources[c.name] = resources
+        resources = {name: set(r for cr in c.claimed_resources for r in cr.resources)
+                     for name, c in controllers.items()
+                     if c.state == 'running' or name == start_name}
+        start_resources = resources.pop(start_name)
 
-        stop_controllers = [c for c, rs in claimed_resources.items()
-                            for r in rs if r in require_resources]
+        stop_names = [name for name, res in resources.items()
+                      if start_resources.intersection(res)]
 
-        return self.switch_controllers(
-            start_controllers=[name],
-            stop_controllers=list(set(stop_controllers)))
+        started = self.switch_controllers(
+            start_controllers=[start_name],
+            stop_controllers=stop_names)
+
+        return started, stop_names
 
     def stop_controller(self, name):
         """Stop controller
@@ -155,3 +153,41 @@ class ControllerManager():
             bool -- indicates if the controllers were stopped successfully or not
         """
         return self.switch_controllers(stop_controllers=[name])
+
+
+class Controller():
+    """ 
+    Utility to simplify managing hw controllers.
+    """
+
+    def __init__(self, controller_manager, name):
+        self._cm = controller_manager
+        self._name = name
+        self._started = False
+        self._restore = []
+
+    @property
+    def started(self):
+        return self._started
+
+    def start(self):
+        """Start controller."""
+        started, restore = self._cm.start_controller(self._name)
+        self._started = started
+        self._restore = restore
+
+    def stop(self):
+        """Stop controller and restart stopped controllers."""
+        if not self._started:
+            return
+        self._cm.switch_controllers(
+            self._restore, [self._name])
+
+    def __enter__(self):
+        """Start at enter."""
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Stop at exit."""
+        self.stop()
