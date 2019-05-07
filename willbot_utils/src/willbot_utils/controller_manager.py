@@ -9,7 +9,7 @@ class ControllerManager():
     Utility to simplify managing hw controllers.
     """
 
-    def __init__(self, namespace='/', persistent=False):
+    def __init__(self, namespace='/', persistent=True):
         """Initializer
         
         Keyword Arguments:
