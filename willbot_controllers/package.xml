@@ -18,7 +18,7 @@
   <depend>roscpp</depend> 
 
   <export>
-    <!-- <controller_interface plugin="${prefix}/force_torque_sensor_plugin.xml"/> -->
+    <controller_interface plugin="${prefix}/admittance_controller_plugin.xml"/>
   </export>
 
 </package>
