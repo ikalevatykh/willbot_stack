@@ -24,6 +24,7 @@
   <arg name="init_gripper" default="true" />
 
   <arg name="camera" default="none"/>
+  <arg name="rviz" default="false"/>
 
   <!-- set global parameter for any node -->
   <param name="willbot_setup" value="$(arg setup)"/> 
@@ -68,5 +69,8 @@
   <include file="$(find willbot_bringup)/launch/camera_bringup.launch">
     <arg name="camera" value="$(arg camera)" />
   </include>
+
+  <!-- rviz -->
+  <include file="$(find willbot_moveit_config)/launch/moveit_rviz.launch" if="$(arg rviz)" />
 
 </launch>
