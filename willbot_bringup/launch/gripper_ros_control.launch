@@ -22,7 +22,7 @@
 
   <group ns="$(arg gripper_name)">
 
-    <!-- load controller settings -->  
+    <!-- load controller settings -->
     <rosparam file="$(find willbot_bringup)/config/gripper_controllers.yaml" command="load"/>
 
     <!-- spawn controller manager -->
