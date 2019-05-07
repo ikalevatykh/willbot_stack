@@ -6,17 +6,19 @@ Creates a willow robotic arm with the passed in prefix.  If there
 is only one arm in the urdf then an empty prefix can be used "".  If
 there are multiple arms then a prefix followed by an "_" is needed.
 -->
-<robot xmlns:xacro="http://ros.org/wiki/xacro">
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
 
-  <!-- robotiq s model -->
-  <xacro:include filename="$(find robotiq_3f_gripper_visualization)/cfg/robotiq-3f-gripper_articulated_macro.xacro" />
   <!-- common stuff -->
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
   <!-- ur5 -->
   <xacro:include filename="$(find ur_description)/urdf/ur5.urdf.xacro" />
+  <!-- force torque sensor -->
+  <xacro:include filename="$(find willbot_description)/urdf/robotiq_fts.macro.xacro" />
   <!-- adapter -->
   <xacro:include filename="$(find willbot_description)/urdf/adapter.paris.macro.xacro" />
-  <xacro:include filename="$(find willbot_description)/urdf/adapter.grenoble.macro.xacro" />  
+  <xacro:include filename="$(find willbot_description)/urdf/adapter.grenoble.macro.xacro" />
+  <!-- robotiq s model -->
+  <xacro:include filename="$(find robotiq_3f_gripper_visualization)/cfg/robotiq-3f-gripper_articulated_macro.xacro" />
 
   <xacro:macro name="willbot" params="prefix setup">
 
@@ -42,12 +44,27 @@ there are multiple arms then a prefix followed by an "_" is needed.
         wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}" />
     </xacro:if>
 
+    <!-- Connect tool0_controller to base using floating joint -->
+    <!-- This frame will be sending by the UR5 driver with take into account the arm calibration -->
+    <joint name="base_tool0_controller_floating_joint" type="floating">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="base"/>
+      <child link="tool0_controller"/>
+    </joint>
+    <link name="tool0_controller"/>
+
     <!-- hand -->
     <xacro:robotiq-3f-gripper_articulated prefix="${prefix}hand_"/>
 
     <!-- arm to hand adapter -->
     <xacro:if value="${setup == 'paris'}">
-      <xacro:paris_adapter prefix="${prefix}"/>
+      <xacro:robotiq_fts prefix="${prefix}" parent="${prefix}tool0">
+        <origin rpy="0 0 0" xyz="0 0 0.002"/>
+      </xacro:robotiq_fts>
+
+      <xacro:paris_adapter prefix="${prefix}" parent="${prefix}fts_toolside">
+        <origin rpy="0 0 ${pi+pi/12}" xyz="0 0 0"/>
+      </xacro:paris_adapter>
     </xacro:if>
 
     <xacro:if value="${setup == 'grenoble'}">

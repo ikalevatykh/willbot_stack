@@ -4,9 +4,9 @@ adapter_macro(prefix)
 
 Adapter between arm and gripper for Grenoble setup.
 -->
-<robot xmlns:xacro="http://ros.org/wiki/xacro">
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
 
-  <xacro:macro name="paris_adapter" params="prefix">
+  <xacro:macro name="paris_adapter" params="prefix parent *origin">
 
     <xacro:property name="adapter_radius" value="0.040" />
     <xacro:property name="adapter_length" value="0.030" />
@@ -17,8 +17,8 @@ Adapter between arm and gripper for Grenoble setup.
     <xacro:property name="tube_remove" value="0.100" />
 
     <joint name="${prefix}tool0-adapter_fixed_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 ${-pi/4}"/>
-      <parent link="${prefix}tool0"/>
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
       <child link="${prefix}adapter_link"/>
     </joint>
 

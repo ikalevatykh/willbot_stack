@@ -4,7 +4,7 @@ adapter_macro(prefix)
 
 Adapter between arm and gripper for Paris setup.
 -->
-<robot xmlns:xacro="http://ros.org/wiki/xacro">
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
 
   <xacro:macro name="grenoble_adapter" params="prefix">
 
