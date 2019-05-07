@@ -31,3 +31,4 @@ hand_trajectory_controller:
    stop_trajectory_duration: 0.2
    state_publish_rate:  10
    action_monitor_rate: 30
+   allow_partial_joints_goal: True
