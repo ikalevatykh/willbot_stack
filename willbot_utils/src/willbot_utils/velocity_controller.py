@@ -17,8 +17,6 @@ class ControllerException(Exception):
 
 
 class VelocityController(object):
-    KIN_CACHE = None
-
     def __init__(self, group, workspace):
         self._group = group
         self._workspace = workspace
@@ -26,26 +24,29 @@ class VelocityController(object):
         base_link = group.get_planning_frame()
         end_link = group.get_end_effector_link()
         robot = URDF.from_parameter_server()
-        kin = KDLKinematics(robot, base_link, end_link)
-        VelocityController.KDL_KIN_CACHE = kin
-        VelocityController.KIN_CACHE = UR5Kinematics()
 
-        self._kin = VelocityController.KIN_CACHE
-        self._kdl_kin = VelocityController.KDL_KIN_CACHE
+        self._kin = UR5Kinematics()
+        self._kdl_kin = KDLKinematics(robot, base_link, end_link)
         self._kin.set_configuration('right up forward')
         self._joint_names = self._kdl_kin.get_joint_names()
 
         cmd_topic = '/arm/pos_based_pos_traj_controller/command'
         self._publisher = rospy.Publisher(cmd_topic, JointTrajectory, queue_size=10)
-
         self.update_current()
 
     def update_current(self):
         self._q = self._group.get_current_joint_values()
         pos, orn = self._kin.forward(self._q)
         self._x = pm.fromMatrix(_homogenous(pos, orn))
-        import transforms3d
-        print(transforms3d.euler.quat2euler(orn))
+
+    def send_joint_position(self, q, dt):
+        traj = JointTrajectory()
+        traj.joint_names = self._joint_names
+        point = JointTrajectoryPoint()
+        point.positions = q
+        point.time_from_start = rospy.Duration(dt)
+        traj.points.append(point)
+        self._publisher.publish(traj)
 
     def step(self, dt, lin_vel=(0, 0, 0), rot_vel=(0, 0, 0), check=False, base_time=None):
         q0 = self._q
@@ -60,7 +61,10 @@ class VelocityController(object):
         angle = np.linalg.norm(rot_vel)
         if angle > 0:
             axis = np.array(rot_vel) / angle
-            rot_step = kdl.Rotation.Rot(kdl.Vector(*axis), angle * dt)
+            axis_vec = kdl.Vector(*axis)
+            axis_vec = X0.M.Inverse() * axis_vec
+            # axis_vec = kdl.Vector(0, 0, axis_vec.z())
+            rot_step = kdl.Rotation.Rot(axis_vec, angle * dt)
         else:
             rot_step = kdl.Rotation()
 
@@ -72,17 +76,19 @@ class VelocityController(object):
 
         p = np.array([X2.p.x(), X2.p.y(), X2.p.z()])
         if np.any(p < self._workspace[0, :]-0.01) or np.any(p > self._workspace[1, :]+0.01):
-            # raise ControllerException(
-            #    'Target outside workspace bounds: {} / {}'.format(p, self._workspace))
+            raise ControllerException(
+               'Target outside workspace bounds: {} / {}'.format(p, self._workspace))
             return
 
         R, p = X1.M.GetQuaternion(), X1.p
+        R = [R[3], R[0], R[1], R[2]]
         orn, pos = R, [p.x(), p.y(), p.z()]
         q1 = self._kin.inverse(pos, orn, q_init=q0)
         if q1 is None:
             raise ControllerException('IK solution not found')
 
         R, p = X2.M.GetQuaternion(), X2.p
+        R = [R[3], R[0], R[1], R[2]]
         orn, pos = R, [p.x(), p.y(), p.z()]
         q2 = self._kin.inverse(pos, orn, q_init=q1)
         if q2 is None:
@@ -110,7 +116,6 @@ class VelocityController(object):
         point.positions = q1
         point.time_from_start = rospy.Duration(dt)
         traj.points.append(point)
-        # prediction for future on case huge delays
         point = JointTrajectoryPoint()
         point.positions = q2
         point.time_from_start = rospy.Duration(dt * 2)

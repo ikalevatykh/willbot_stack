@@ -92,7 +92,7 @@ class UR5Kinematics():
 
         Arguments:
             pos {list(3)} -- target tool position.
-            orn {list(4)} -- target tool orientation.
+            orn {list(4)} -- target tool orientation. wxyz
 
         Keyword Arguments:
             q6_des {float} -- An optional parameter which designates what the q6 value should take
@@ -127,9 +127,7 @@ class UR5Kinematics():
         mask &= q_sol[:, 0] >= - 3 * np.pi / 2
         q_sol = q_sol[mask]
 
-        mask = [all(self._get_configuration(q) * self.kin_indicies >= 0)
-                for q in q_sol]
-
+        mask = np.array([all(self._get_configuration(q) * self.kin_indicies >= 0) for q in q_sol])
         q_sol = q_sol[mask]
 
         if np.any(q_sol) and q_init is not None:
@@ -185,11 +183,13 @@ class UR5Kinematics():
 
 
 def _quat(orn):
-    return Quaternion(orn[3], *orn[:3])
+    # return Quaternion(orn[3], *orn[:3])
+    return Quaternion(*orn)
 
 
 def _orn(q):
-    return [q[1], q[2], q[3], q[0]]
+    # Convention is wxyz on real and xyzw in sim
+    return [q[0], q[1], q[2], q[3]]
 
 
 def _homogenous(pos, orn):
