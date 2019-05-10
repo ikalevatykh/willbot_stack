@@ -8,12 +8,17 @@ endif()
 
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
+  cmake_modules
+  control_toolbox
   controller_interface
   geometry_msgs
   hardware_interface
+  kdl_conversions
+  kdl_parser  
   pluginlib
   realtime_tools
   roscpp
+  urdf 
 )
 
 # Declare catkin package
