@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="serial_id" default="ttyUSB0" />
+    <arg name="frame_id" default="robotiq_ft_frame_id" />
+
+    <node name="ft_sensor" pkg="robotiq_ft_sensor" type="rq_sensor" output="screen" required="true">
+        <param name="serial_id" value="$(arg serial_id)"/>
+        <param name="frame_id" value="$(arg frame_id)"/>
+    </node>
+
+</launch>
