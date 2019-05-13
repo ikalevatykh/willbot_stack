@@ -10,7 +10,7 @@
 
 #include "internal/admittance.h"
 #include "internal/force_torque_sensor_interface.h"
-#include "internal/kinematic_description.h"
+#include "internal/robot_model.h"
 
 namespace willbot_controllers
 {

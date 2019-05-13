@@ -1,5 +1,5 @@
 #include <willbot_controllers/admittance_controller.h>
-
+#include <willbot_controllers/internal/utils.h>
 
 namespace willbot_controllers
 {
@@ -85,7 +85,7 @@ void AdmittanceController::update(const ros::Time& time, const ros::Duration& pe
   admittance_.update(q_curr_, w_curr_, period.toSec());
 
   // write velocity
-  set_command(joint_handles_, admittance_.output());
+  set_command(admittance_.output(), joint_handles_);
 }
 
 void AdmittanceController::stopping(const ros::Time& /*time*/)

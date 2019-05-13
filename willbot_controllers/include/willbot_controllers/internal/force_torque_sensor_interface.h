@@ -14,7 +14,7 @@ public:
   {
   }
 
-  inline hardware_interface::ForceTorqueSensorHandle getHandle() const
+  inline hardware_interface::ForceTorqueSensorHandle getHandle()
   {
     return hardware_interface::ForceTorqueSensorHandle(name_, frame_id_, force_, torque_);
   }
@@ -81,13 +81,13 @@ void ForceTorqueSensorInterface::update(const ros::Time& time)
   const auto& msg = *msg_buffer_.readFromRT();
   if (time - msg.header.stamp < ros::Duration(1, 0))
   {
-    force[0] = msg.wrench.force.x;
-    force[1] = msg.wrench.force.y;
-    force[2] = msg.wrench.force.z;
+    force_[0] = msg.wrench.force.x;
+    force_[1] = msg.wrench.force.y;
+    force_[2] = msg.wrench.force.z;
 
-    torque[0] = msg.wrench.torque.x;
-    torque[1] = msg.wrench.torque.y;
-    torque[2] = msg.wrench.torque.z;
+    torque_[0] = msg.wrench.torque.x;
+    torque_[1] = msg.wrench.torque.y;
+    torque_[2] = msg.wrench.torque.z;
   }
   else
   {

@@ -111,8 +111,7 @@ bool RobotModel::init(ros::NodeHandle& nh)
       if (!getJointLimits(name, nh, joint_limits_[name]))
         getJointLimits(urdf_joint, joint_limits_[name]);
 
-      if (!getSoftJointLimits(name, nh, soft_limits_[name]))
-        getSoftJointLimits(urdf_joint, soft_limits_[name]);
+      getSoftJointLimits(urdf_joint, soft_limits_[name]);
 
       joint_names_.push_back(name);
     }

@@ -26,6 +26,11 @@ public:
   void setpoint(const KDL::JntArray& q_goal, const KDL::Wrench& w_goal);
   void update(const KDL::JntArray& q_curr, const KDL::Wrench& w_curr, double dt);
 
+  inline const KDL::JntArray& output()
+  {
+    return q_cmd_.q;
+  } 
+
 private:
   ros::NodeHandle nh_;
 

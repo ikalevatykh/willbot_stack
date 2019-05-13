@@ -3,7 +3,7 @@
 
 namespace willbot_controllers
 {
-  bool PerformanceController::init(hardware_interface::JointStateInterface* /*hw*/, ros::NodeHandle & /*root_nh*/, ros::NodeHandle& controller_nh)
+  bool PerformanceController::init(hardware_interface::JointStateInterface* /*hw*/, ros::NodeHandle & root_nh, ros::NodeHandle& controller_nh)
   {
     realtime_pub_.reset(new realtime_tools::RealtimePublisher<std_msgs::Duration>(root_nh, "control_step", 10));
     return true;
@@ -13,7 +13,7 @@ namespace willbot_controllers
   {
       if (realtime_pub_->trylock())
       {
-        realtime_pub_.msg_.data = period;
+        realtime_pub_->msg_.data = period;
         realtime_pub_->unlockAndPublish();
       }
   }
