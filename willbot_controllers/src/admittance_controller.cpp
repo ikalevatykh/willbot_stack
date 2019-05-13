@@ -1,6 +1,5 @@
 #include <willbot_controllers/admittance_controller.h>
 
-#include <kdl_conversions/kdl_msg.h>
 
 namespace willbot_controllers
 {
@@ -8,19 +7,15 @@ bool AdmittanceController::init(hardware_interface::VelocityJointInterface* hw, 
                                 ros::NodeHandle& controller_nh)
 {
   // load kinematic description from parameter server
-  if (!kinematic_description_.init(controller_nh))
+  if (!robot_model_.init(controller_nh))
     return false;
 
-  // init force torque sensor subscriber
-  // TODO: switch to the multi-hw interface
-  if (!ft_sensor_.init(controller_nh))
-    return false;    
-
-  for (const auto joint_name : kinematic_description_.joint_names())
+  // claim joint handles 
+  for (const auto joint_name : robot_model_.joint_names())
   {
     try
     {
-      joints_.push_back(hw->getHandle(joint_name));
+      joint_handles_.push_back(hw->getHandle(joint_name));
     }
     catch (const hardware_interface::HardwareInterfaceException& e)
     {
@@ -28,13 +23,29 @@ bool AdmittanceController::init(hardware_interface::VelocityJointInterface* hw, 
       return false;
     }
   }
-  n_joints_ = joints_.size();
+  n_joints_ = joint_handles_.size();
 
-  force_torque_ = ft_sensor_.getHandle();
+  // init force torque sensor subscriber
+  // We use this wrapper class because ur_modern_driver 
+  // does not support multi hardware interface
+  if (!ft_sensor_.init(controller_nh))
+    return false; 
+
+  // claim force torque handle 
+  try
+  {
+    force_torque_hadle_ = ft_sensor_.getHandle();
+  }
+  catch (const hardware_interface::HardwareInterfaceException& e)
+  {
+    ROS_ERROR_STREAM("Exception thrown: " << e.what());
+    return false;
+  }
 
   // init admittance
-  admittance_.init(controller_nh, kinematic_description_.chain(), force_torque_.getFrameId());
+  admittance_.init(controller_nh, robot_model_.chain(), force_torque_hadle_.getFrameId());
 
+  // reserve memory
   q_goal_ = KDL::JntArray(n_joints_);
   q_curr_ = KDL::JntArray(n_joints_);
   return true;
@@ -42,59 +53,43 @@ bool AdmittanceController::init(hardware_interface::VelocityJointInterface* hw, 
 
 void AdmittanceController::starting(const ros::Time& time)
 {
-  ft_sensor_.starting();
-
-  ros::Duration(1.0).sleep();
-
+  // read latest force torque message
   ft_sensor_.update(time);
 
-  for (unsigned int i = 0; i < n_joints_; ++i)
-  {
-    q_goal_(i) = joints_[i].getPosition();
-    q_curr_(i) = joints_[i].getPosition();
-  }
+  // update current position
+  get_position(joint_handles_, q_curr_);
 
-  for (unsigned int i = 0; i < 3; ++i)
-  {
-    w_goal_.force(i) = force_torque_.getForce()[i];
-    w_goal_.torque(i) = force_torque_.getTorque()[i];
-  }
+  // update current wrench
+  get_wrench(force_torque_hadle_, w_curr_);
 
-  admittance_.reset(q_goal_);
+  // TODO: apply fts compensation
+
+  // set current values as admittance equilibrium point 
+  admittance_.reset(q_curr_, w_curr_);
 }
 
 void AdmittanceController::update(const ros::Time& time, const ros::Duration& period)
 {
-  // read current position
-  for (unsigned int i = 0; i < n_joints_; ++i)
-  {
-    q_curr_(i) = joints_[i].getPosition();
-  }
-
-  // read force torque
+  // read latest force torque message
   ft_sensor_.update(time);
-  for (unsigned int i = 0; i < 3; ++i)
-  {
-    w_curr_.force(i) = force_torque_.getForce()[i];
-    w_curr_.torque(i) = force_torque_.getTorque()[i];
-  }
+
+  // update current position
+  get_position(joint_handles_, q_curr_);
+
+  // update current wrench
+  get_wrench(force_torque_hadle_, w_curr_);
+
+  // TODO: apply fts compensation
 
   // update admittance internal state
-  admittance_.update(q_goal_, q_curr_, w_goal_, w_curr_, period.toSec());
+  admittance_.update(q_curr_, w_curr_, period.toSec());
 
-  // update velocity command
-  // const auto& commands = admittance_.command_velocity();
-
-  // write command velocities
-  for (unsigned int i = 0; i < n_joints_; i++)
-  {
-    // joints_[i].setCommand(commands[i]);
-  }
+  // write velocity
+  set_command(joint_handles_, admittance_.output());
 }
 
 void AdmittanceController::stopping(const ros::Time& /*time*/)
 {
-  ft_sensor_.stopping();
 }
 }
 

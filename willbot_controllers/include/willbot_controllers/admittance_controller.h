@@ -9,7 +9,7 @@
 #include <kdl/jntarray.hpp>
 
 #include "internal/admittance.h"
-#include "internal/ft_sensor_interface_adapter.h"
+#include "internal/force_torque_sensor_interface.h"
 #include "internal/kinematic_description.h"
 
 namespace willbot_controllers
@@ -29,11 +29,11 @@ public:
 
 private:
   ForceTorqueSensorInterface ft_sensor_;
-  KinematicDescription kinematic_description_;
+  RobotModel robot_model_;
   Admittance admittance_;
 
-  hardware_interface::ForceTorqueSensorHandle force_torque_;
-  std::vector<hardware_interface::JointHandle> joints_;
+  hardware_interface::ForceTorqueSensorHandle force_torque_hadle_;
+  std::vector<hardware_interface::JointHandle> joint_handles_;
   unsigned int n_joints_;
 
   KDL::JntArray q_goal_;

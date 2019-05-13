@@ -42,16 +42,27 @@ add_library(admittance_controller
 )
 target_link_libraries(admittance_controller ${catkin_LIBRARIES})
 
+add_library(performance_controller
+  src/performance_controller.cpp 
+  include/willbot_controllers/performance_controller.h
+)
+target_link_libraries(performance_controller ${catkin_LIBRARIES})
+
 # Install
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 # Install libraries
-install(TARGETS admittance_controller
+install(TARGETS 
+    admittance_controller
+    performance_controller
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
-install(FILES admittance_controller_plugin.xml
+# Install export descriptions
+install(FILES 
+    admittance_controller_plugin.xml
+    performance_controller_plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

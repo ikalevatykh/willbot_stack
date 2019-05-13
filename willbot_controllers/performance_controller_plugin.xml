@@ -1,0 +1,9 @@
+<library path="lib/libperformance_controller">
+
+  <class name="willbot_controllers/PerformanceController" type="willbot_controllers::PerformanceController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      This controller is publishes the current control step as a std_msgs/Period message.
+    </description>
+  </class>
+
+</library>
