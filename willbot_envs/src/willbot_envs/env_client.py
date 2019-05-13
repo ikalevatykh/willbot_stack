@@ -43,7 +43,7 @@ class EnvironmentClient(gym.Env):
         self._seed_client = rospy.ServiceProxy(
             '/willbot_env/seed', Seed)
         self._step_client = rospy.ServiceProxy(
-            '/willbot_env/step', Step, persistent=True)
+            '/willbot_env/step', Step)
         self._reset_client = actionlib.SimpleActionClient(
             '/willbot_env/reset', EnvResetAction)
 
