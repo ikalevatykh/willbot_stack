@@ -22,13 +22,13 @@ class CartesianPlan(object):
     def step_base(self, pos=(0, 0, 0), orn=(0, 0, 0)):
         """ Shift in base frame """
         p, q = _from_pos_orn(pos, orn)
-        frame = kdl.Frame(p, q) * self._frames[-1]
+        frame = kdl.Frame(q, p) * self._frames[-1]
         self._frames.append(frame)
 
     def step_tool(self, pos=(0, 0, 0), orn=(0, 0, 0)):
         """ Shift in tool frame """
         p, q = _from_pos_orn(pos, orn)
-        frame = self._frames[-1] * kdl.Frame(p, q)
+        frame = self._frames[-1] * kdl.Frame(q, p)
         self._frames.append(frame)
 
     def aproach(self, distance):
