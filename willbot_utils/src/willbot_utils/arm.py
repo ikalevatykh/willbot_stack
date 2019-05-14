@@ -64,6 +64,15 @@ class UR5(moveit_commander.MoveGroupCommander):
         plan.move(pos, orn)
         return plan.execute(wait)
 
+    def linear_step(self, pos=(0, 0, 0), orn=(0, 0, 0), tool=False, wait=True):
+        """Plan and execute step in cartesian space."""
+        plan = CartesianPlan(self)
+        if tool:
+            plan.step_tool(pos, orn)
+        else:
+            plan.step_base(pos, orn)
+        return plan.execute(wait)
+
     def cartesian(self):
         """Returns interface for cartesian path planning."""
         return CartesianPlan(self)
