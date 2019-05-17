@@ -12,6 +12,7 @@
 
   <depend>control_toolbox</depend>
   <depend>controller_interface</depend>
+  <depend>dynamic_reconfigure</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>hardware_interface</depend>
@@ -22,14 +23,8 @@
   <depend>roscpp</depend>
   <depend>urdf</depend>
 
-  <!-- <depend>angles</depend>
-  <depend>control_msgs</depend> 
-  <depend>forward_command_controller</depend>
-  <depend>dynamic_reconfigure</depend>
-  <depend>message_runtime</depend> -->
-
   <export>
-    <controller_interface plugin="${prefix}/admittance_controller_plugin.xml"/>
+    <controller_interface plugin="${prefix}/willbot_controllers_plugin.xml"/>
   </export>
 
 </package>

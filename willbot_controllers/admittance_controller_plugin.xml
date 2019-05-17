@@ -1,9 +1,0 @@
-<library path="lib/libadmittance_controller">
-
-  <class name="willbot_controllers/AdmittanceController" type="willbot_controllers::AdmittanceController" base_class_type="controller_interface::ControllerBase">
-    <description>
-      The AdmittanceController. It expects a VelocityJointInterface type of hardware interface.
-    </description>
-  </class>
-
-</library>

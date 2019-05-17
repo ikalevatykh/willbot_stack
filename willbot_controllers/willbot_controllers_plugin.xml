@@ -1,0 +1,24 @@
+<library path="lib/libwillbot_controllers">
+
+  <class name="willbot_controllers/CartesianAdmittanceController" type="willbot_controllers::CartesianAdmittanceController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that renders a mass-spring-damper system in cartesian space.
+    </description>
+  </class>
+  <class name="willbot_controllers/CartesianVelocityController" type="willbot_controllers::CartesianVelocityController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a motion based on cartesian velocities.
+    </description>
+  </class>
+  <class name="willbot_controllers/JointVelocityController" type="willbot_controllers::JointVelocityController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a motion based on joint velocities.
+    </description>
+  </class>  
+  <class name="willbot_controllers/PerformanceController" type="willbot_controllers::PerformanceController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that publishes current control time step.
+    </description>
+  </class>
+
+</library>
