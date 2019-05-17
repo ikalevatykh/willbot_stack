@@ -84,40 +84,17 @@ bool CartesianAdmittanceController::init(hardware_interface::VelocityJointInterf
   }
   n_joints_ = joint_handles_.size();
 
-  // k_gain_ = KDL::Stiffness{ 1e3, 1e3, 1e3, 0, 0, 0 };
-  // d_gain_ = KDL::Stiffness{ 1e3, 1e3, 1e3, 0, 0, 0 /*1e2*/ };
-  // m_gain_ = KDL::Stiffness{ 1e1, 1e1, 1e2, 1e10, 1e10, 1e10 /*1e2*/ };
-
-  // Compliance parameters
-  constexpr double inf = std::numeric_limits<double>::infinity();
-
-  k_gain_ = KDL::Stiffness{ 0, 0, 0, 0, 0, 0 };
-  d_gain_ = KDL::Stiffness{ 0, 0, 0, 0, 0, 0 };
-  m_gain_ = KDL::Stiffness{ inf, inf, inf, inf, inf, inf };
-
-  std::vector<std::string> axes{ "x", "y", "z", "rx", "ry", "rz" };
-  for (int i = 0; i < 6; ++i)
-  {
-    nh.getParam("compliance/" + axes[i] + "/K", k_gain_[i]);
-    nh.getParam("compliance/" + axes[i] + "/D", d_gain_[i]);
-    nh.getParam("compliance/" + axes[i] + "/M", m_gain_[i]);
-  }
+  axis_enabled_.assign(6, false);
 
   // Dynamic reconfigure
-  dynamic_reconfigure_compliance_param_node_ = ros::NodeHandle("dynamic_reconfigure_compliance_param_node");
-
   dynamic_server_compliance_param_ =
-      std::make_unique<dynamic_reconfigure::Server<willbot_controllers::compliance_paramConfig>>(
-          dynamic_reconfigure_compliance_param_node_);
+      std::make_unique<dynamic_reconfigure::Server<willbot_controllers::compliance_paramConfig>>(nh);
   dynamic_server_compliance_param_->setCallback(
       boost::bind(&CartesianAdmittanceController::complianceParamCallback, this, _1, _2));
 
   // Force torque data subscriber
   sub_wrench_ =
       nh.subscribe<geometry_msgs::WrenchStamped>(wrench_topic_, 100, &CartesianAdmittanceController::wrenchCB, this);
-
-  // k_gain_ = KDL::Stiffness{ 10, 10, 10, 1.0, 1.0, 1.0 };
-  // d_gain_ = KDL::Stiffness{ 5e3, 5e3, 5e3, 1e10, 1e10, 1e10 /*1e2*/ };
 
   // Kinematic solvers
   fk_pos_.reset(new KDL::ChainFkSolverPos_recursive(chain));
@@ -152,9 +129,12 @@ void CartesianAdmittanceController::starting(const ros::Time& time)
 
 void CartesianAdmittanceController::update(const ros::Time& time, const ros::Duration& period)
 {
+  const auto dt = period.toSec();
+
   // Bias is important
   if (!wrench_bias_ok_)
   {
+    ROS_WARN_STREAM_DELAYED_THROTTLE(1, "Waiting for force torque data");
     wrench_bias_ = *wrench_buffer_.readFromRT();
     wrench_bias_ok_ = wrench_bias_ != KDL::Wrench::Zero();
     return;
@@ -173,15 +153,23 @@ void CartesianAdmittanceController::update(const ros::Time& time, const ros::Dur
   const auto wrench_base = x_current_.M * (fts_to_tool_ * wrench_sens);
   // Error in base frame
   const auto error_base = KDL::diff(x_equilibrium_, x_current_);
+
   // Admittance dynamics: M*x" + D*x' + K*e = F
-  const auto accel_base = m_gain_.Inverse(wrench_base - k_gain_ * error_base - d_gain_ * twist_desired_);
-  // Integrate acceleration for enabled axes
-  twist_desired_ += accel_base * period.toSec();
+  for (int i = 0; i < 6; ++i)
+  {
+    if (axis_enabled_[i])
+    {
+      const auto accel = (wrench_base[i] - k_gain_[i] * error_base[i] - d_gain_[i] * twist_desired_[i]) / m_gain_[i];
+      twist_desired_[i] += accel * dt;
+    }
+    else
+    {
+      twist_desired_[i] = 0.0;
+    }
+  }
 
   // Desired joint velocities
   ik_vel_->CartToJnt(q_current_, twist_desired_, qdot_desired_);
-
-  // Apply joint velocities command
   for (unsigned int i = 0; i < n_joints_; ++i)
   {
     joint_handles_[i].setCommand(qdot_desired_(i));
@@ -204,7 +192,11 @@ void CartesianAdmittanceController::wrenchCB(const geometry_msgs::WrenchStampedC
 void CartesianAdmittanceController::complianceParamCallback(willbot_controllers::compliance_paramConfig& config,
                                                             uint32_t /*level*/)
 {
-  // TODO: realisation
+  axis_enabled_ = { config.x_enabled,  config.y_enabled,  config.z_enabled,
+                    config.rx_enabled, config.ry_enabled, config.rz_enabled };
+  k_gain_ = KDL::Stiffness{ config.x_K, config.y_K, config.z_K, config.rx_K, config.ry_K, config.rz_K };
+  d_gain_ = KDL::Stiffness{ config.x_D, config.y_D, config.z_D, config.rx_D, config.ry_D, config.rz_D };
+  m_gain_ = KDL::Stiffness{ config.x_M, config.y_M, config.z_M, config.rx_M, config.ry_M, config.rz_M };
 }
 }
 

@@ -37,6 +37,7 @@ protected:
   std::string wrench_frame_id_;
   std::string wrench_topic_;
 
+  std::vector<bool> axis_enabled_;
   KDL::Stiffness k_gain_;
   KDL::Stiffness d_gain_;
   KDL::Stiffness m_gain_;
