@@ -5,6 +5,7 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <realtime_tools/realtime_buffer.h>
 
+#include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainiksolvervel_wdls.hpp>
 #include <kdl/frames.hpp>
 #include <kdl/tree.hpp>
@@ -31,13 +32,17 @@ protected:
   // std::vector<joint_limits_interface::VelocityJointSoftLimitsHandle> joint_limits_;
 
   std::unique_ptr<KDL::ChainIkSolverVel> ik_vel_;
+  std::unique_ptr<KDL::ChainFkSolverPos> fk_pos_;
   KDL::JntArray current_q_;
+  KDL::Frame current_x_;
   KDL::JntArray desired_qdot_;
+  KDL::Twist desired_v_;
 
   struct TwistCommand
   {
-    ros::Time expired;
+    ros::Time expiring;
     KDL::Twist twist;
+    bool tool;
   };
   realtime_tools::RealtimeBuffer<TwistCommand> command_buffer_;
 

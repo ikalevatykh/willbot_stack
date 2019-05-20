@@ -28,7 +28,7 @@ protected:
 
   struct VelocityCommand
   {
-    ros::Time expired;
+    ros::Time expiring;
     std::vector<double> velocities;
   };
   realtime_tools::RealtimeBuffer<VelocityCommand> command_buffer_;

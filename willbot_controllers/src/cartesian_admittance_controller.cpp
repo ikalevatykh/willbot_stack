@@ -74,8 +74,8 @@ bool CartesianAdmittanceController::init(hardware_interface::RobotHW* robot_hw, 
   fk_pos.JntToCart(KDL::JntArray{}, fts_to_tool_);
 
   // Kinematic solvers
-  fk_pos_.reset(new KDL::ChainFkSolverPos_recursive(chain));
-  ik_vel_.reset(new KDL::ChainIkSolverVel_wdls(chain));
+  fk_pos_.reset(new KDL::ChainFkSolverPos_recursive{chain});
+  ik_vel_.reset(new KDL::ChainIkSolverVel_wdls{chain});
 
   // Prepare data
   n_joints_ = joint_handles_.size();

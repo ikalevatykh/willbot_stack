@@ -52,7 +52,7 @@ void JointVelocityController::starting(const ros::Time& time)
 void JointVelocityController::update(const ros::Time& time, const ros::Duration& period)
 {
   const auto command = command_buffer_.readFromRT();
-  const bool expired = time >= command->expired;
+  const bool expired = time >= command->expiring;
 
   for (unsigned int i = 0; i < n_joints_; ++i)
   {
@@ -73,8 +73,8 @@ void JointVelocityController::commandCB(const std_msgs::Float64MultiArrayConstPt
     return;
   }
 
-  const auto expired = ros::Time::now() + ros::Duration(keep_command_duration_);
-  command_buffer_.writeFromNonRT({ expired, msg->data });
+  const auto expiring = ros::Time::now() + ros::Duration(keep_command_duration_);
+  command_buffer_.writeFromNonRT({ expiring, msg->data });
 }
 }
 
