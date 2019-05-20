@@ -11,8 +11,7 @@ namespace willbot_controllers
 class JointVelocityController : public controller_interface::Controller<hardware_interface::VelocityJointInterface>
 {
 public:
-  virtual bool init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& root_nh,
-                    ros::NodeHandle& controller_nh);
+  virtual bool init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& controller_nh);
   virtual void starting(const ros::Time& time);
   virtual void update(const ros::Time& time, const ros::Duration& /*period*/);
 
@@ -27,15 +26,14 @@ protected:
   // bool has_limits_;
   // std::vector<joint_limits_interface::VelocityJointSoftLimitsHandle> joint_limits_;
 
-private:
-  ros::Subscriber sub_command_;
-  void commandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
-
   struct VelocityCommand
   {
     ros::Time expired;
     std::vector<double> velocities;
   };
   realtime_tools::RealtimeBuffer<VelocityCommand> command_buffer_;
+
+  ros::Subscriber sub_command_;
+  void commandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
 };
 }

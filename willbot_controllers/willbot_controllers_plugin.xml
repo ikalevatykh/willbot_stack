@@ -10,11 +10,26 @@
       A controller that executes a motion based on cartesian velocities.
     </description>
   </class>
+  <class name="willbot_controllers/CartesianVelocityForceTorqueLimitedController" type="willbot_controllers::CartesianVelocityForceTorqueLimitedController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a motion based on cartesian velocities.
+    </description>
+  </class>
   <class name="willbot_controllers/JointVelocityController" type="willbot_controllers::JointVelocityController" base_class_type="controller_interface::ControllerBase">
     <description>
       A controller that executes a motion based on joint velocities.
     </description>
-  </class>  
+  </class>
+  <class name="willbot_controllers/JointVelocityForceTorqueLimitedController" type="willbot_controllers::JointVelocityForceTorqueLimitedController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a motion based on cartesian velocities.
+    </description>
+  </class>
+  <class name="willbot_controllers/ForceTorqueSensorController" type="willbot_controllers::ForceTorqueSensorController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that subscribes force torque data and provides to other controllers.
+    </description>
+  </class>
   <class name="willbot_controllers/PerformanceController" type="willbot_controllers::PerformanceController" base_class_type="controller_interface::ControllerBase">
     <description>
       A controller that publishes current control time step.

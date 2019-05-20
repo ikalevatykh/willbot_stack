@@ -2,8 +2,7 @@
 
 namespace willbot_controllers
 {
-bool JointVelocityController::init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& root_nh,
-                                   ros::NodeHandle& controller_nh)
+bool JointVelocityController::init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& controller_nh)
 {
   ros::NodeHandle& nh = controller_nh;
 

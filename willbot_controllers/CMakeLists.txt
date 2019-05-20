@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 generate_dynamic_reconfigure_options(
-  cfg/compliance_param.cfg
+  cfg/admittance_param.cfg
 )
 
 catkin_package(
@@ -41,6 +41,8 @@ catkin_package(
 add_library(willbot_controllers
   src/cartesian_admittance_controller.cpp
   src/cartesian_velocity_controller.cpp
+  src/force_torque_limited_controller.cpp
+  src/force_torque_sensor_controller.cpp
   src/joint_velocity_controller.cpp
   src/performance_controller.cpp
 )
