@@ -32,18 +32,18 @@
     <group_state name="downward" group="manipulator">
         <joint name="elbow_joint" value="-1.5708" />
         <joint name="shoulder_lift_joint" value="-1.5708" />
-        <joint name="shoulder_pan_joint" value="-3.1415" />
+        <joint name="shoulder_pan_joint" value="-1.5708" />
         <joint name="wrist_1_joint" value="-1.5707" />
         <joint name="wrist_2_joint" value="1.5707" />
-        <joint name="wrist_3_joint" value="0.7854" />
+        <joint name="wrist_3_joint" value="-0.2618" />
     </group_state>
     <group_state name="forward" group="manipulator">
         <joint name="elbow_joint" value="-1.5708" />
         <joint name="shoulder_lift_joint" value="-1.5708" />
-        <joint name="shoulder_pan_joint" value="-3.1415" />
+        <joint name="shoulder_pan_joint" value="-1.5708" />
         <joint name="wrist_1_joint" value="-3.1415" />
         <joint name="wrist_2_joint" value="-1.5708" />
-        <joint name="wrist_3_joint" value="0.7854" />
+        <joint name="wrist_3_joint" value="-0.2618" />
     </group_state>
     <group_state name="open" group="gripper">
         <joint name="hand_finger_middle_joint_1" value="0.0495" />

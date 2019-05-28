@@ -303,13 +303,7 @@ class StandardScene(Scene):
                     "wall", (1.2, 0.04, 0.7), (0.36, -0.42, 0.25)),
                 self._make_box(
                     "table", (1.2, 0.8, 0.1), (0.36, 0.0, -0.05)),
-                self._make_box(
-                    "rubber", (1.2, 0.625, 0.01), (0.36, 0, 0.005)),
-                self._make_color(
-                    "rubber", (1, 1, 1))
             ])
-
-            arm.set_support_surface_name('rubber')
 
         elif setup == 'grenoble':
             self._apply_scene_diff([
@@ -327,7 +321,7 @@ class StandardScene(Scene):
                     "table", (1, 1, 1))
             ])
 
-            arm.set_support_surface_name('table')
+        arm.set_support_surface_name('table')
 
 
 def main():
