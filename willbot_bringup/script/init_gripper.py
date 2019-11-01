@@ -13,11 +13,11 @@ try:
 
     # waiting for a state to be ensure the gripper is connected
     topic = '/{}/joint_states'.format(gripper)
-    rospy.wait_for_message(topic, JointState, timeout=15.0)
+    rospy.wait_for_message(topic, JointState, timeout=10.0)
 
     # initialize the gripper if it is not yet initialized
     service = '/{}/init'.format(gripper)
-    rospy.wait_for_service(service, timeout=5.0)
+    rospy.wait_for_service(service, timeout=10.0)
 
     init_srv = rospy.ServiceProxy(service, Trigger)
     resp = init_srv()
