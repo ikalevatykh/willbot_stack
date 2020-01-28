@@ -12,7 +12,7 @@ Adapter between arm and gripper for Grenoble setup.
     <xacro:property name="adapter_length" value="0.030" />
     <xacro:property name="adapter_weight" value="0.100" />
 
-    <xacro:property name="tube_length" value="0.100" />
+    <xacro:property name="tube_length" value="0.160" />
     <xacro:property name="tube_radius" value="0.022" />
     <xacro:property name="tube_remove" value="0.080" />
 
@@ -51,7 +51,7 @@ Adapter between arm and gripper for Grenoble setup.
         </geometry>
       </collision>
       <collision>
-        <origin xyz="${tube_remove} 0.0 ${-tube_length/2.0 + 0.02}" rpy="0 0 0" />
+        <origin xyz="${tube_remove} 0.0 ${-tube_length/2.0}" rpy="0 0 0" />
         <geometry>
           <cylinder radius="${tube_radius}" length="${tube_length}"/>
         </geometry>
