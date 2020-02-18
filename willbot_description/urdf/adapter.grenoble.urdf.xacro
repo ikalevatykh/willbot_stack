@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+adapter_macro(prefix)
+
+Adapter between arm and gripper for Paris setup.
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:macro name="adapter" params="prefix">
+    <xacro:property name="adapter_radius" value="0.040" />
+    <xacro:property name="adapter_length" value="0.084" />
+    <xacro:property name="adapter_weight" value="0.100" />
+    
+    <joint name="${prefix}adapter_fix" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${prefix}tool0"/>
+      <child link="${prefix}adapter_link"/>
+    </joint>
+
+    <link name="${prefix}adapter_link">
+      <visual>
+        <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
+        </geometry>
+        <material name="Grey">
+          <color rgba="0.2 0.2 0.2 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${adapter_radius}" length="${adapter_length}"/>
+        </geometry>
+      </collision>
+      <xacro:cylinder_inertial radius="${adapter_radius}" length="${adapter_length}" mass="${adapter_weight}">
+        <origin xyz="0.0 0.0 ${adapter_length/2.0}" rpy="0 0 0" />
+      </xacro:cylinder_inertial>
+    </link>
+
+    <joint name="${prefix}adapter_toolside_fix" type="fixed">
+      <origin xyz="0 0 ${adapter_length}" rpy="0 0 0"/>
+      <parent link="${prefix}adapter_link"/>
+      <child link="${prefix}adapter_toolside"/>
+    </joint>
+    <link name="${prefix}adapter_toolside" />
+  </xacro:macro>
+
+</robot>

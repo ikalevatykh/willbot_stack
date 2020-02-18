@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:macro name="onrobot_rg2" params="parent prefix *origin">
+        <joint name="${prefix}gripper_fix" type="fixed">
+            <xacro:insert_block name="origin"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}rg2_body_link"/>
+        </joint>
+
+        <link name="${prefix}rg2_body_link">
+            <visual>
+                <origin rpy="0 0 0" xyz="0.0015 0.0085 0.051"/>
+                <geometry>
+                    <mesh filename="package://willbot_description/meshes/rg2_gripper/rg2.dae" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="White">
+                    <color rgba="1.0 1.0 1.0 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="0.0015 0.0085 0.051"/>
+                <geometry>
+                    <mesh filename="package://willbot_description/meshes/rg2_gripper/rg2.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="1"/>
+                <inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1"/>
+            </inertial>
+        </link>
+
+        <joint name="${prefix}tool_joint" type="fixed">
+            <origin rpy="0 0 0" xyz="0 0 0.18"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}tool"/>
+        </joint>
+        <link name="${prefix}tool" />
+    </xacro:macro>
+</robot>
