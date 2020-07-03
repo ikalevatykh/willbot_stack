@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Kinect launch. 
+  Kinect launch.
 
   Usage:
     willbot_gripper_bringup.launch gripper_ip:=<value>

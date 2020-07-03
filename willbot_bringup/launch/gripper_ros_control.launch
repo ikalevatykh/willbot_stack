@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Gripper launch. 
+  Gripper launch.
   Opens MODBUS connection to the gripper.
   Starts gripper hardware interface.
 
@@ -30,8 +30,8 @@
         args="$(arg prefix)joint_state_controller $(arg prefix)gripper_controller" />
 
     <!-- load other controller -->
-    <node name="gripper_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
-      output="screen" args="load $(arg prefix)trajectory_controller" />
+    <!-- <node name="gripper_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
+      output="screen" args="load $(arg prefix)trajectory_controller" /> -->
 
   </group>
 

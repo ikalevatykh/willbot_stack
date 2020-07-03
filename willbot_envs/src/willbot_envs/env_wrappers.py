@@ -4,7 +4,7 @@ from gym import ObservationWrapper
 import rospy
 from sensor_msgs.msg import JointState
 
-from willbot_utils.camera import ImageListener
+from willbot_utils.camera import ImageListener, ImageSnapshot
 
 
 class CameraObserver(ObservationWrapper):
@@ -20,6 +20,21 @@ class CameraObserver(ObservationWrapper):
         if rospy.Time.now() - stamp > self._timeout:
             raise RuntimeError(
                 'Image from camera "{}" expired'.format(self._key))
+        observation[self._key] = img
+        return observation
+
+
+class CameraSnapshotObserver(ObservationWrapper):
+    def __init__(self, env, key, topic, encoding=None, timeout=rospy.Duration(5.0)):
+        super(CameraSnapshotObserver, self).__init__(env)
+        self._key = key
+        self._stream = ImageSnapshot(topic)
+        self._encoding = encoding
+        self._timeout = timeout
+
+    def observation(self, observation):
+        img = self._stream.wait_for_image(
+            self._encoding, timeout=self._timeout.to_sec())
         observation[self._key] = img
         return observation
 

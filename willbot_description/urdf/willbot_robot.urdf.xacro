@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="willbot">
+  <xacro:arg name="setup" default=""/>
+  <xacro:arg name="prefix" default=""/>
+  <xacro:arg name="gripper" default="robotiq_3f"/>
+  <xacro:arg name="kinematics_config" default="$(find willbot_description)/config/ur5_paris.yaml"/>
+
+  <xacro:property name="setup" value="$(arg setup)"/>
+  <xacro:property name="kinematics_file" value="${load_yaml('$(arg kinematics_config)')}"/>  
+
+  <link name="world"/>
+
+  <xacro:if value="${setup == 'paris'}">
+    <xacro:include filename="$(find willbot_description)/urdf/willbot.paris.urdf.xacro"/>
+    <xacro:willbot prefix="$(arg prefix)" parent="world" kinematics_file="${kinematics_file}" gripper="$(arg gripper)">
+      <origin xyz="0.0 0.0 0.003" rpy="0.0 0.0 ${-pi/2}"/>
+    </xacro:willbot>
+  </xacro:if>
+
+  <xacro:if value="${setup == 'grenoble'}">
+    <xacro:include filename="$(find willbot_description)/urdf/willbot.grenoble.urdf.xacro"/>
+    <xacro:willbot prefix="$(arg prefix)" parent="world" kinematics_file="${kinematics_file}" gripper="$(arg gripper)">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${-pi/2}"/>
+    </xacro:willbot>
+  </xacro:if>  
+</robot>

@@ -5,7 +5,7 @@ from controller_manager_msgs.srv import *
 
 
 class ControllerManager():
-    """ 
+    """
     Utility to simplify managing hw controllers.
     """
 
@@ -16,6 +16,8 @@ class ControllerManager():
             group {str} -- controller manager group (default: {''})
             persistent {bool} -- use persistent connection (default: {True})
         """
+        self._group = group
+
         if group:
             namespace = '/{}/controller_manager/'.format(group)
         else:
@@ -29,6 +31,10 @@ class ControllerManager():
             namespace + 'unload_controller', UnloadController, persistent=persistent)
         self._switch_srv = rospy.ServiceProxy(
             namespace + 'switch_controller', SwitchController, persistent=persistent)
+
+    @property
+    def group(self):
+        return self._group
 
     def list_controllers(self):
         """ Returns a list of controller names/states/types of the
@@ -47,7 +53,7 @@ class ControllerManager():
             name {str} -- controller name
 
         Returns:
-            bool -- indicates if the controller was successfully 
+            bool -- indicates if the controller was successfully
                     constructed and initialized or not
         """
         try:
@@ -76,13 +82,13 @@ class ControllerManager():
             return False
 
     def switch_controllers(self, start_controllers=[], stop_controllers=[], strict=True):
-        """Stops a number of controllers and start a number of controllers, 
-            all in one single timestep of the controller_manager control loop. 
+        """Stops a number of controllers and start a number of controllers,
+            all in one single timestep of the controller_manager control loop.
 
         Keyword Arguments:
             start_controllers {list} -- the list of controller names to start (default: {[]})
             stop_controllers {list} -- the list of controller names to stop (default: {[]})
-            strict {bool} -- if False even when something goes wrong with on controller, 
+            strict {bool} -- if False even when something goes wrong with on controller,
                 the service will still try to start/stop the remaining controllers (default: {True})
 
         Returns:
@@ -119,11 +125,11 @@ class ControllerManager():
         if start_name in controllers:
             # do nothing if the controller already started
             if controllers[start_name].state == 'running':
-                return True
+                return True, []
         else:
             # load controller if not loaded
             if not self.load_controller(start_name):
-                return False
+                return False, []
             # update list
             controllers = self.list_controllers()
 
@@ -156,15 +162,22 @@ class ControllerManager():
 
 
 class Controller():
-    """ 
+    """
     Utility to simplify managing hw controllers.
     """
 
     def __init__(self, controller_manager, name):
+        if not isinstance(controller_manager, ControllerManager):
+            namespace = controller_manager
+            controller_manager = ControllerManager(namespace)
         self._cm = controller_manager
         self._name = name
         self._started = False
         self._restore = []
+
+    @property
+    def namespace(self):
+        return '/{}/{}/'.format(self._cm.group, self._name)
 
     @property
     def started(self):

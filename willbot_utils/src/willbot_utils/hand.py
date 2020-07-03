@@ -123,11 +123,19 @@ class RobotiqHand(object):
         })
         return self._gripper.go(wait=wait)
 
-    def open(self, wait=True):
-        return self.move(position=self._open_position, wait=wait)
+    def open(self, width=None, wait=True):
+        if width is not None:
+            position = self._kinematics.width_to_angle(width)
+	else:
+            position = self._open_position
+        return self.move(position=position, wait=wait)
 
-    def close(self, wait=True):
-        return self.move(position=self._close_position, wait=wait)
+    def close(self, width=None, wait=True):
+        if width is not None:
+            position = self._kinematics.width_to_angle(width)
+	else:
+            position = self._close_position
+        return self.move(position=position, wait=wait)
 
     def parallel_move(self, width, wait=True):
         '''Move fingers assuming parallel grasp.

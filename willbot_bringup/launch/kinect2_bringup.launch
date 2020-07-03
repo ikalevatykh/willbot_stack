@@ -1,45 +1,40 @@
 <?xml version="1.0"?>
 <!--
-  Kinect 2 launch. 
+  Kinect 2 launch.
 
   Usage:
     kinect2_bringup.launch param:=<value>
 -->
 <launch>
-  <arg name="sensor_id" default="default"/>
 
-  <arg if="$(eval sensor_id == 'default')" name="base_name" default="kinect2"/>
-  <arg if="$(eval sensor_id == 'default')" name="sensor" default=""/>
-
-  <arg if="$(eval sensor_id == 'paris_1')" name="base_name" default="kinect2_n1"/>
-  <arg if="$(eval sensor_id == 'paris_1')" name="sensor" default="001419663847"/>
-
-  <arg if="$(eval sensor_id == 'paris_2')" name="base_name" default="kinect2_n2"/>
-  <arg if="$(eval sensor_id == 'paris_2')" name="sensor" default="001792263847"/>
-
+  <arg name="base_name" default="kinect2"/>
   <arg name="fps_limit" default="-1.0" />
   <arg name="depth_method" default="cuda" />
   <arg name="reg_method" default="opencl" />
-  <arg name="max_depth" default="3.0"/>
-  <arg name="min_depth" default="0.5"/>
-  <arg name="bilateral_filter"  default="false"/>
-  <arg name="edge_aware_filter" default="false"/>   
-  <arg name="publish_tf" default="false" />
-  <arg name="base_name_tf" default="camera" />
+  <arg name="max_depth" default="2.0"/>
+  <arg name="min_depth" default="0.0"/>
+  <arg name="bilateral_filter" default="false"/>
+  <arg name="edge_aware_filter" default="false"/>
+  <arg name="publish_tf" default="true" />
+  <arg name="base_name_tf" default="$(arg base_name)" />
+  <arg name="calib_path" value="$(find kinect2_bridge)/data/"/>
 
-  <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
-    <arg name="base_name" value="$(arg base_name)"/>
-    <arg name="sensor" value="$(arg sensor)"/>
-    <arg name="fps_limit" value="$(arg fps_limit)"/>
-    <arg name="depth_method" value="$(arg depth_method)"/>
-    <arg name="reg_method" value="$(arg reg_method)"/>
-    <arg name="publish_tf" value="$(arg publish_tf)"/>
-    <arg name="base_name_tf" value="$(arg base_name_tf)"/>    
-    <arg name="calib_path" value="$(find kinect2_bridge)/data/"/>
-  </include>
+  <group if="$(eval base_name == 'kinect2')">
+    <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" pass_all_args="true"/>
+  </group>
 
-  <!-- static transform to camera -->
-  <!--node name="" pkg="tf" type="static_transform_publisher" respawn="true" output="screen"
-      args="1.37832, -0.0119859, 0.68708, -0.23053357693906318, 0.010968847229148588, 0.9729818496425293, -0.006346224101550414  world camera_link 100" /-->
+  <group if="$(eval base_name == 'kinect2_01')">
+    <arg name="sensor" default="001419663847"/>
+    <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" pass_all_args="true"/>
+    <node name="$(anon tf_publisher)" pkg="tf" type="static_transform_publisher"
+      launch-prefix="/bin/bash -c '$* `rosparam get /sensors/$(arg base_name)/pose` 50' --"/>
+  </group>
+
+  <group if="$(eval base_name == 'kinect2_02')">
+    <arg name="sensor" default="001792263847"/>
+    <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" pass_all_args="true"/>
+    <node name="$(anon tf_publisher)" pkg="tf" type="static_transform_publisher"
+      launch-prefix="/bin/bash -c '$* `rosparam get /sensors/$(arg base_name)/pose` 50' --"/>
+  </group>
 
 </launch>

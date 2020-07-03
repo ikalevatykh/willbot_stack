@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:include filename="$(find robotiq_3f_gripper_visualization)/cfg/robotiq-3f-gripper_articulated_macro.xacro"/>
+
+    <xacro:macro name="robotiq_3f" params="prefix parent *origin">
+        <joint name="${prefix}hand_fix" type="fixed">
+            <xacro:insert_block name="origin"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}hand_base"/>
+        </joint>
+        <link name="${prefix}hand_base" />
+
+        <joint name="${prefix}palm_fix" type="fixed">
+            <origin xyz="0 0 ${0.045}" rpy="${pi/2} 0 0"/>
+            <parent link="${prefix}hand_base"/>
+            <child link="${prefix}hand_palm"/>
+        </joint>
+        <xacro:robotiq-3f-gripper_articulated prefix="${prefix}hand_"/>
+
+        <joint name="${prefix}tool_joint" type="fixed">
+            <origin rpy="0 0 0" xyz="0 0 0.2"/>
+            <parent link="${prefix}hand_base"/>
+            <child link="${prefix}tool"/>
+        </joint>
+        <link name="${prefix}tool" />
+    </xacro:macro>
+</robot>

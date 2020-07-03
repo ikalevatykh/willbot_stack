@@ -4,7 +4,7 @@
 
     <!-- customize logging settings for standalone running -->
     <include file="$(find willbot_bringup)/launch/customize_log.launch"/>
- 
+
     <!-- kinect -->
     <group if="$(eval arg('camera') == 'kinect')">
         <include file="$(find willbot_bringup)/launch/kinect_bringup.launch" />
@@ -13,7 +13,7 @@
     <!-- kinect 2 -->
     <group if="$(eval arg('camera') == 'kinect2')">
         <include file="$(find willbot_bringup)/launch/kinect2_bringup.launch" />
-    </group>  
+    </group>
 
     <!-- realsense -->
     <group if="$(eval arg('camera') == 'realsense')">

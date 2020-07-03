@@ -30,7 +30,7 @@ class EnvironmentClient(gym.Env):
             environment_id(string): unique environment id.
             init_node(bool): if setted register ROS node.
         """
-        self._session_id = -1
+        self._session_id = None
 
         if init_node:
             rospy.myargv(argv=sys.argv)
@@ -52,10 +52,15 @@ class EnvironmentClient(gym.Env):
             environment_id, dumps(params))
         self._session_id = resp.session_id
 
+        rospy.on_shutdown(self.close)
+
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
         episode is reached, you are responsible for calling `reset()`
         to reset this environment's state."""
+
+        if self._session_id is None:
+            return {}, 0.0, True, {}
 
         result = self._step_client(
             session_id=self._session_id,
@@ -104,12 +109,11 @@ class EnvironmentClient(gym.Env):
 
     def close(self):
         """Override _close in your subclass to perform any necessary cleanup."""
-
-        self._step_client.close()
-
-        if self._session_id != -1:
-            self._close_client(self._session_id)
-            self._session_id = -1
+        if self._session_id is not None:
+            session_id = self._session_id
+            self._session_id = None
+            self._close_client(session_id)
+            self._step_client.close()
 
     def __enter__(self):
         """Just return self."""

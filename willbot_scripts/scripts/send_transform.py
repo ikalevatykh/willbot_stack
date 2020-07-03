@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
+
 import rospy
 import tf
 import numpy as np
@@ -28,7 +29,7 @@ def on_press(key):
         position[2] += 0.001
     if key == KeyCode(char='d'):
         position[2] -= 0.001
-        
+
     if key == KeyCode(char='r'):
         orientation[0] += 0.001
     if key == KeyCode(char='f'):
@@ -41,7 +42,7 @@ def on_press(key):
         orientation[2] += 0.001
     if key == KeyCode(char='h'):
         orientation[2] -= 0.001
-    
+
     print(position)
     print(orientation)
 
@@ -56,26 +57,26 @@ def on_release(key):
 def main():
     rospy.init_node('send_transform', anonymous=True)
     br = tf.TransformBroadcaster()
-    
+
     with Listener(
         on_press=on_press,
         on_release=on_release) as listener:
-        
+
         rate = rospy.Rate(50)
         while listener.running:
             p = kdl.Vector(*position)
             q = kdl.Rotation.RPY(*orientation)
             f = kdl.Frame(q, p)
-            
+
             p1 = kdl.Vector(-0.045, 0.000, 0.000)
             q1 = kdl.Rotation.RPY(1.571, -1.571, 0.000)
-            f1 = kdl.Frame(q1, p1)           
-        
+            f1 = kdl.Frame(q1, p1)
+
             f2 = f * f1
-            
+
             print(f2.p)
             print(f2.M.GetQuaternion())
-            
+
             br.sendTransform(
                  f2.p,
                  f2.M.GetQuaternion(),
@@ -85,7 +86,7 @@ def main():
 
             rate.sleep()
         listener.join()
-    
+
 
 if __name__ == '__main__':
     main()

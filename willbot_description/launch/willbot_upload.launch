@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="setup" default="paris"/>
-  
-  <param name="robot_description" 
-    command="$(find xacro)/xacro --inorder '$(find willbot_description)/urdf/willbot.urdf.xacro' setup:=$(arg setup)" />
+  <arg name="gripper" default="robotiq_3f"/>  
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find willbot_description)/urdf/willbot_robot.urdf.xacro' setup:=$(arg setup) gripper:=$(arg gripper)" />
 </launch>

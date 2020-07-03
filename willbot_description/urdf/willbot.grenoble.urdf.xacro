@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro"/>
+  <xacro:include filename="$(find ur_description)/urdf/ur5.urdf.xacro"/>
+  <xacro:include filename="$(find willbot_description)/urdf/robotiq_ft300.urdf.xacro"/>
+  <xacro:include filename="$(find willbot_description)/urdf/adapter.grenoble.urdf.xacro"/>
+  <xacro:include filename="$(find willbot_description)/urdf/robotiq_3f.urdf.xacro"/>
+  <xacro:include filename="$(find willbot_description)/urdf/onrobot_rg2.urdf.xacro"/>
+
+  <xacro:macro name="willbot" params="prefix parent *origin kinematics_file gripper">
+    <!-- ur5 arm -->
+    <joint name="${prefix}robot_fix" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${prefix}base_link"/>
+    </joint>
+    <xacro:ur5_robot prefix="${prefix}" joint_limited="true"
+      shoulder_pan_lower_limit="${-pi}" shoulder_pan_upper_limit="${pi}"
+      shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${pi}"
+      elbow_joint_lower_limit="${-2*pi}" elbow_joint_upper_limit="${0}"
+      wrist_1_lower_limit="${-pi}" wrist_1_upper_limit="${pi}"
+      wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
+      wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}"
+      kinematics_file="${kinematics_file}"
+    />
+    <!-- force torque sensor -->
+    <xacro:robotiq_ft300 prefix="${prefix}fts_" parent="${prefix}tool0">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </xacro:robotiq_ft300>
+    <!-- gripper -->
+    <xacro:if value="${gripper == 'robotiq_3f'}">
+      <xacro:adapter prefix="${prefix}" parent="${prefix}fts_toolside">
+        <origin rpy="0 0 ${pi+pi/12}" xyz="0 0 0"/>
+      </xacro:adapter>
+      <xacro:robotiq_3f prefix="${prefix}" parent="${prefix}adapter_toolside">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </xacro:robotiq_3f>
+    </xacro:if>
+    <xacro:if value="${gripper == 'onrobot_rg2'}">
+      <!-- some adapter ? -->
+      <xacro:onrobot_rg2 prefix="${prefix}" parent="${prefix}fts_toolside">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </xacro:onrobot_rg2>
+    </xacro:if>
+  </xacro:macro>
+</robot>
