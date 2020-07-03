@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   geometry_msgs
   hardware_interface
+  joint_trajectory_controller
   kdl_conversions
   kdl_parser  
   pluginlib
@@ -33,6 +34,7 @@ catkin_package(
     dynamic_reconfigure
     geometry_msgs
     hardware_interface
+    joint_trajectory_controller
     pluginlib
     realtime_tools
     roscpp

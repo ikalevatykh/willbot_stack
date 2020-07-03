@@ -2,10 +2,9 @@
 
 namespace willbot_controllers
 {
-bool JointVelocityController::init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& controller_nh)
+bool JointVelocityController::init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& /*root_nh*/,
+                                   ros::NodeHandle& nh)
 {
-  ros::NodeHandle& nh = controller_nh;
-
   // Period for keeping previous command
   if (!nh.getParam("keep_command_duration", keep_command_duration_))
   {

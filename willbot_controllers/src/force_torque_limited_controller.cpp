@@ -8,7 +8,8 @@
 namespace willbot_controllers
 {
 template <class TController>
-bool ForceTorqueLimitedController<TController>::init(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& nh)
+bool ForceTorqueLimitedController<TController>::init(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh,
+                                                     ros::NodeHandle& nh)
 {
   auto* joints_hw = robot_hw->get<hardware_interface::VelocityJointInterface>();
   auto* sensor_hw = robot_hw->get<hardware_interface::ForceTorqueSensorInterface>();
@@ -39,7 +40,7 @@ bool ForceTorqueLimitedController<TController>::init(hardware_interface::RobotHW
   }
 
   // Velocity controller
-  if (!controller_.init(joints_hw, nh))
+  if (!controller_.init(joints_hw, root_nh, nh))
   {
     return false;
   }
@@ -56,35 +57,36 @@ void ForceTorqueLimitedController<TController>::starting(const ros::Time& time)
 
   utils::getWrench(sensor_handle_, wrench_bias_);
   wrench_previous_ = wrench_bias_;
-  running_ = true;
+  limits_violated_ = false;
 }
 
 template <class TController>
 void ForceTorqueLimitedController<TController>::update(const ros::Time& time, const ros::Duration& period)
 {
-  if (!running_)
-  {
-    utils::zeroCommand(joint_handles_);
-    return;
-  }
-
   utils::getWrench(sensor_handle_, wrench_current_);
 
   if ((wrench_current_ - wrench_bias_).force.Norm() > force_limit_abs_)
   {
     ROS_DEBUG_STREAM("Abs force violated: " << (wrench_current_ - wrench_bias_));
-    running_ = false;
+    limits_violated_ = true;
   }
 
   if ((wrench_current_ - wrench_previous_).force.Norm() > force_limit_rel_)
   {
     ROS_DEBUG_STREAM("Rel force violated: " << (wrench_current_ - wrench_previous_));
-    running_ = false;
+    limits_violated_ = true;
   }
 
   wrench_previous_ = wrench_current_;
 
+  // Update internal controller
   controller_.update(time, period);
+
+  if (limits_violated_)
+  {
+    // Hard stop
+    utils::zeroCommand(joint_handles_);
+  }
 }
 
 template <class TController>
@@ -92,14 +94,27 @@ void ForceTorqueLimitedController<TController>::stopping(const ros::Time& time)
 {
   controller_.stopping(time);
 }
+}
 
+#include <joint_trajectory_controller/joint_trajectory_controller.h>
+#include <trajectory_interface/quintic_spline_segment.h>
+
+typedef joint_trajectory_controller::JointTrajectoryController<trajectory_interface::QuinticSplineSegment<double>,
+                                                               hardware_interface::VelocityJointInterface>
+    JointTrajectoryController;
+
+namespace willbot_controllers
+{
 // Exporting types
 typedef ForceTorqueLimitedController<CartesianVelocityController> CartesianVelocityForceTorqueLimitedController;
 typedef ForceTorqueLimitedController<JointVelocityController> JointVelocityForceTorqueLimitedController;
+typedef ForceTorqueLimitedController<JointTrajectoryController> JointTrajectoryForceTorqueLimitedController;
 }
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(willbot_controllers::CartesianVelocityForceTorqueLimitedController,
                        controller_interface::ControllerBase)
 PLUGINLIB_EXPORT_CLASS(willbot_controllers::JointVelocityForceTorqueLimitedController,
+                       controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(willbot_controllers::JointTrajectoryForceTorqueLimitedController,
                        controller_interface::ControllerBase)
