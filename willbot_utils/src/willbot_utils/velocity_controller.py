@@ -61,6 +61,12 @@ class VelocityController(object):
         X1 = base_tf * X0 * tool_tf
         X2 = base_tf * X1 * tool_tf
 
+        p = np.array([X1.p.x(), X1.p.y(), X1.p.z()])
+        if np.any(p < self._workspace[0, :]-0.01) or np.any(p > self._workspace[1, :]+0.01):
+            # raise ControllerException(
+            #    'Target outside workspace bounds: {} / {}'.format(p, self._workspace))
+            return
+
         p = np.array([X2.p.x(), X2.p.y(), X2.p.z()])
         if np.any(p < self._workspace[0, :]-0.01) or np.any(p > self._workspace[1, :]+0.01):
             # raise ControllerException(
@@ -70,12 +76,14 @@ class VelocityController(object):
         q1 = self._kin.inverse(pm.toMatrix(X1), q_guess=q0)
         if q1 is None:
             raise ControllerException('IK solution not found')
+        jerk = np.max(np.abs(np.subtract(q0, q1)))
+        if jerk > 0.2:
+            raise ControllerException('IK solution not continuous')
 
         q2 = self._kin.inverse(pm.toMatrix(X2), q_guess=q1)
         if q2 is None:
             raise ControllerException('IK solution not found')
-
-        jerk = np.max(np.abs(np.subtract(q2, q0)))
+        jerk = np.max(np.abs(np.subtract(q1, q2)))
         if jerk > 0.2:
             raise ControllerException('IK solution not continuous')
 
