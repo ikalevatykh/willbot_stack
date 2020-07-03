@@ -81,3 +81,4 @@ class WillbotEnv(gym.Env):
         """Override close in your subclass to perform any necessary cleanup."""
         self._arm.stop()
         self._hand.stop()
+
