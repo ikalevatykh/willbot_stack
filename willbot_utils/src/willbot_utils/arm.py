@@ -56,7 +56,10 @@ class UR5(moveit_commander.MoveGroupCommander):
         plan = self.plan()
         if not plan.joint_trajectory.points:
             return False
-        return self.execute(plan, wait)
+        success = self.execute(plan, wait)
+        # if success:
+        #     rospy.sleep(0.5)
+        return success
 
     def linear_move(self, pos=None, orn=None, wait=True):
         """Plan and execute motion in cartesian space."""
@@ -77,6 +80,6 @@ class UR5(moveit_commander.MoveGroupCommander):
         """Returns interface for cartesian path planning."""
         return CartesianPlan(self)
 
-    def pick_place(self, target_object):
+    def pick_place(self, target_object=None):
         """Returns interface for simple pick&place planning."""
         return TopPickPlacePlan(self, self._hand, target_object)
