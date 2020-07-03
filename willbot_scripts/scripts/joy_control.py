@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from __future__ import print_function
 
@@ -15,9 +15,9 @@ from willbot_utils.scene import StandardScene
 
 
 class VelocityController(Controller):
-    def __init__(self, cm, name='tool_velocity_controller'):
+    def __init__(self, cm, name='cartesian_velocity_controller'):
         Controller.__init__(self, cm, name)
-        topic = '/{}/tool_velocity_controller/command'.format(cm.group)
+        topic = '/{}/{}/command'.format(cm.group, name)
         self._pub = rospy.Publisher(topic, TwistStamped, queue_size=10)
 
     def command(self, linear, angular):
@@ -52,7 +52,7 @@ class JoyControllerNode(object):
 
     def run(self, joy, arm_ctrl, hand):
         max_linear_vel = rospy.get_param('max_linear_vel', 0.05)
-        max_angular_vel = rospy.get_param('max_angular_vel', 0.1)
+        max_angular_vel = rospy.get_param('max_angular_vel', 0.05)
 
         hand.mode = 1
         grasp = False
@@ -65,11 +65,11 @@ class JoyControllerNode(object):
             if np.any(signal):
                 if joy.buttons[5]:
                     # rotation
-                    w = signal * [1, -1, 1] * max_linear_vel
+                    w = signal * [1, -1, 1] * max_angular_vel
                     v = (0, 0, 0)
                 else:
                     # linear step
-                    v = signal * [1, -1, 1] * max_angular_vel
+                    v = signal * [1, -1, 1] * max_linear_vel
                     w = (0, 0, 0)
 
                 arm_ctrl.command(v, w)
@@ -90,8 +90,6 @@ class JoyControllerNode(object):
                 else:
                     hand.open(wait=False)
                 print('Grasped' if grasp else 'Released')
-
-            # print(arm_ctrl._group.get_current_pose().pose)
 
             rate.sleep()
 
