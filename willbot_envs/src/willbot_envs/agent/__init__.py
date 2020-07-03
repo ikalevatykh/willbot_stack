@@ -1,1 +1,1 @@
-from script import ScriptAgent
+from .script import ScriptAgent

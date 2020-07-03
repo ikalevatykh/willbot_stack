@@ -1,4 +1,4 @@
-from utils import Frame, TrapVelocityProfile
+from .utils import Frame, TrapVelocityProfile
 
 
 class ScriptAgent():
