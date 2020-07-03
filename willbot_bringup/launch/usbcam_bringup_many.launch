@@ -1,6 +1,6 @@
 <launch>
     <arg name="device_ids" default="0,1" />
-    
+
     <arg name="image_width" default="640" />
     <arg name="image_height" default="480" />
     <arg name="framerate" default="30" />
@@ -10,7 +10,7 @@
     <arg name="view" default="False" />
 
     <arg name="first_id" value="$(eval str(device_ids).split(',')[0])" />
-    <arg name="other_ids" value="$(eval ','.join(str(device_ids).split(',')[1:]))" />  
+    <arg name="other_ids" value="$(eval ','.join(str(device_ids).split(',')[1:]))" />
 
     <!-- Start first camera -->
     <include file="$(find willbot_bringup)/launch/usbcam_bringup.launch">

@@ -1,21 +1,33 @@
 <?xml version="1.0"?>
 <!--
-  Simulator launch.  Loads willbot description. 
+  Simulator launch.  Loads willbot description.
   Starts Gazebo. Starts moveit interface.
 
   Usage:
     willbot_demo.launch
 -->
 <launch>
-  
+
   <arg name="setup" default="paris"/>
+  <arg name="gripper_name" default="gripper" />
+
+  <!-- set global parameter for any node -->
+  <param name="willbot_setup" value="$(arg setup)"/>
 
   <!-- robot model -->
   <include file="$(find willbot_description)/launch/willbot_upload.launch">
-    <arg name="setup" value="$(arg setup)"/>    
+    <arg name="setup" value="$(arg setup)"/>
   </include>
+
+  <!-- fake gripper controller -->
+  <node name="$(arg gripper_name)" pkg="willbot_bringup" type="demo_gripper.py" output="screen" />
 
   <!-- moveit -->
   <include file="$(find willbot_moveit_config)/launch/demo.launch" />
+
+  <!-- sensors parameters -->
+  <group ns="sensors">
+    <rosparam file="$(find willbot_bringup)/config/sensors.yaml" command="load"/>
+  </group>
 
 </launch>
