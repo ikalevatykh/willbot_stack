@@ -1,18 +1,25 @@
+import numpy as np
 import rospy
 
 try:
     from pyassimp import pyassimp
     use_pyassimp = True
 except:
-    # In 16.04, pyassimp is busted
-    # https://bugs.launchpad.net/ubuntu/+source/assimp/+bug/1589949
-    use_pyassimp = False
+    try:
+        import pyassimp
+        use_pyassimp = True
+    except:
+        # In 16.04, pyassimp is busted
+        # https://bugs.launchpad.net/ubuntu/+source/assimp/+bug/1589949
+        use_pyassimp = False
 
-from geometry_msgs.msg import Pose, PoseStamped, Point
-from moveit_msgs.msg import CollisionObject, AttachedCollisionObject
-from moveit_msgs.msg import PlanningScene, PlanningSceneComponents, ObjectColor
-from moveit_msgs.srv import GetPlanningScene, ApplyPlanningScene
-from shape_msgs.msg import MeshTriangle, Mesh, SolidPrimitive, Plane
+from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
+from moveit_msgs.msg import (AttachedCollisionObject, CollisionObject,
+                             ObjectColor, PlanningScene,
+                             PlanningSceneComponents)
+from moveit_msgs.srv import ApplyPlanningScene, GetPlanningScene
+from shape_msgs.msg import Mesh, MeshTriangle, Plane, SolidPrimitive
+from transforms3d.quaternions import mat2quat
 
 
 class SceneObject(object):
@@ -35,9 +42,13 @@ class SceneObject(object):
         """Detach the object."""
         self._scene.detach_object(self.name)
 
-    def move(self, pos):
+    def move(self, pos, quat=None):
         """Move the object to a new position."""
-        self._scene.move_object(self.name, pos)
+        frame_id = self._co.header.frame_id
+        if isinstance(self._co, Mesh):
+            self._scene.move_mesh(self.name, pos, quat, frame_id)
+        else:
+            self._scene.move_object(self.name, pos, quat, frame_id)
 
     def shift(self, dpos):
         """Shift the object."""
@@ -62,7 +73,7 @@ class Scene(object):
             '/apply_planning_scene', ApplyPlanningScene)
         self._apply_planning_scene.wait_for_service(timeout=5.0)
 
-    def add_box(self, name, size, pos):
+    def add_box(self, name, size, pos, quat=None, frame_id=None):
         """Add a box primitive to the planning scene.
 
         Args:
@@ -72,11 +83,11 @@ class Scene(object):
         Returns:
             CollsionObject interface for the new object
         """
-        co = self._make_box(name, size, pos)
+        co = self._make_box(name, size, pos, quat, frame_id=frame_id)
         self._apply_scene_diff([co])
         return SceneObject(self, co)
 
-    def add_mesh(self, name, path, scale, pos):
+    def add_mesh(self, name, path, scale, pos, quat=None, frame_id=None):
         """Add the mesh to the planning scene.
 
         Args:
@@ -89,7 +100,7 @@ class Scene(object):
         """
         if type(scale) not in [list, tuple]:
             scale = (scale, ) * 3
-        co = self._make_mesh(name, path, scale, pos)
+        co = self._make_mesh(name, path, scale, pos, quat, frame_id)
         self._apply_scene_diff([co])
         return SceneObject(self, co)
 
@@ -124,14 +135,24 @@ class Scene(object):
             aoc.link_name = link
         self._apply_scene_diff([aoc])
 
-    def move_object(self, name, pos):
+    def move_object(self, name, pos, quat=None, frame_id=None):
         """Move a collision object to a new position.
         Args:
             @name (str): object name
             @pos (x,y,z): new position
         """
-        pose = self._make_pose(pos)
-        co = self._move_command(name, pose)
+        pose = self._make_pose(pos, quat)
+        co = self._move_command(name, prim_poses=[pose], frame_id=frame_id)
+        self._apply_scene_diff([co])
+
+    def move_mesh(self, name, pos, quat=None, frame_id=None):
+        """Move a collision object to a new position.
+        Args:
+            @name (str): object name
+            @pos (x,y,z): new position
+        """
+        pose = self._make_pose(pos, quat)
+        co = self._move_command(name, mesh_poses=[pose], frame_id=frame_id)
         self._apply_scene_diff([co])
 
     def shift_object(self, name, dpos):
@@ -176,14 +197,14 @@ class Scene(object):
         for obj in scene.world.collision_objects:
             self.remove_object(obj.id)
 
-    def _make_box(self, name, size, pos):
+    def _make_box(self, name, size, pos, quat=None, frame_id=None):
         sp = SolidPrimitive()
         sp.type = SolidPrimitive.BOX
         sp.dimensions = size
         return self._add_command(
-            name, self._make_pose(pos), solid=sp)
+            name, self._make_pose(pos, quat), solid=sp, frame_id=frame_id)
 
-    def _make_mesh(self, name, path, scale, pos):
+    def _make_mesh(self, name, path, scale, pos, quat=None, frame_id=None):
         if not use_pyassimp:
             raise RuntimeError('pyassimp is broken, cannot load meshes')
 
@@ -194,8 +215,12 @@ class Scene(object):
         mesh = Mesh()
         for face in scene.meshes[0].faces:
             triangle = MeshTriangle()
-            if len(face.indices) == 3:
-                triangle.vertex_indices = list(face.indices)
+            if isinstance(face, np.ndarray):
+                indices = face.tolist()
+            else:
+                indices = face.indices
+            if len(indices) == 3:
+                triangle.vertex_indices = list(indices)
             mesh.triangles.append(triangle)
         for vertex in scene.meshes[0].vertices:
             point = Point()
@@ -206,12 +231,15 @@ class Scene(object):
         pyassimp.release(scene)
 
         return self._add_command(
-            name, self._make_pose(pos), mesh=mesh)
+            name, self._make_pose(pos, quat), mesh=mesh, frame_id=frame_id)
 
-    def _add_command(self, name, pose, solid=None, mesh=None):
+    def _add_command(self, name, pose, solid=None, mesh=None, frame_id=None):
         co = CollisionObject()
         co.header.stamp = rospy.Time.now()
-        co.header.frame_id = self._planning_frame
+        if frame_id is not None:
+            co.header.frame_id = frame_id
+        else:
+            co.header.frame_id = self._planning_frame
         co.id = name
         if solid is not None:
             co.primitives.append(solid)
@@ -222,10 +250,13 @@ class Scene(object):
         co.operation = CollisionObject.ADD
         return co
 
-    def _move_command(self, name, prim_poses=[], mesh_poses=[]):
+    def _move_command(self, name, prim_poses=[], mesh_poses=[], frame_id=None):
         co = CollisionObject()
         co.header.stamp = rospy.Time.now()
-        co.header.frame_id = self._planning_frame
+        if frame_id is not None:
+            co.header.frame_id = frame_id
+        else:
+            co.header.frame_id = self._planning_frame
         co.id = name
         co.primitive_poses = prim_poses
         co.mesh_poses = mesh_poses
@@ -249,12 +280,17 @@ class Scene(object):
         color.color.a = rgba[3] if len(rgba) > 3 else 1.0
         return color
 
-    def _make_pose(self, pos):
+    def _make_pose(self, pos, quat=None):
         pose = Pose()
-        pose.position.x = pos[0]
-        pose.position.y = pos[1]
-        pose.position.z = pos[2]
-        pose.orientation.w = 1.0
+        if len(pos) == 4:  # homogenous matrix
+            pose.position = Point(*pos[:3, 3])
+            pose.orientation = Quaternion(*mat2quat(pos[:3, :3]))
+        else:
+            pose.position = Point(*pos)
+            if quat is not None:
+                pose.orientation = Quaternion(*quat)
+            else:
+                pose.orientation.w = 1.0
         return pose
 
     def _apply_scene_diff(self, items):
@@ -289,8 +325,14 @@ class Scene(object):
 class StandardScene(Scene):
     """Interface for the planning scene with a standart initialization."""
 
-    def __init__(self, arm):
-        super(StandardScene, self).__init__(arm.get_planning_frame())
+    def __init__(self, arm=None):
+        if arm is not None:
+            arm.set_support_surface_name('table')
+            planning_frame = arm.get_planning_frame()
+        else:
+            planning_frame = '/world'
+
+        super(StandardScene, self).__init__(planning_frame)
 
         setup = rospy.get_param('/willbot_setup')
         rospy.logdebug('Scene setup: {}', setup)
@@ -321,7 +363,7 @@ class StandardScene(Scene):
                     "table", (1, 1, 1))
             ])
 
-        arm.set_support_surface_name('table')
+        # arm.set_support_surface_name('table')
 
 
 def main():
