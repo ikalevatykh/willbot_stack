@@ -1,14 +1,13 @@
 import numpy as np
 
 import rospy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo, Image
 
 from willbot_utils.img_utils import imgmsg_to_array
 
 
-class ImageListener():
-    """
-    Wrapper to asynchronously receiving latest Image from a topic.
+class ImageListener:
+    """Wrapper to asynchronously receiving latest Image from a topic.
 
     Useful when you capture data frequently.
     """
@@ -34,8 +33,7 @@ class ImageListener():
             raise rospy.exceptions.ROSInterruptException("rospy shutdown")
 
     def latest(self, encoding=None, with_time=False):
-        """
-        Return latest received message as numpy array in specified encoding.
+        """Return latest received message as numpy array in specified encoding.
 
         @param encoding: one of 'rgb8', 'bgr8', 'F32C1'. Auto if not specified.
         @param with_time: return tuple (mmesage time, data) if True.
@@ -46,10 +44,17 @@ class ImageListener():
             return (msg.header.stamp, data)
         return data
 
+    def camera_info(self, timeout=None):
+        """Read the camera info for this stream.
 
-class ImageSnapshot():
-    """
-    Wrapper to synchronously receiving Image from a topic.
+        @param timeout: time to wait in seconds
+        """
+        topic = '/'.join(self._topic.split('/')[:-1] + ['camera_info'])
+        return wait_for_camera_info(topic, timeout=timeout)
+
+
+class ImageSnapshot:
+    """Wrapper to synchronously receiving Image from a topic.
 
     Useful when you capture data rarely.
     """
@@ -58,8 +63,7 @@ class ImageSnapshot():
         self._topic = topic
 
     def wait_for_image(self, encoding=None, with_time=False, timeout=None):
-        """
-        Return next received image as numpy array in specified encoding.
+        """Return next received image as numpy array in specified encoding.
 
         @param encoding: one of 'rgb8', 'bgr8', 'F32C1'. Auto if not specified.
         @param with_time: return tuple (mmesage time, data) if True.
@@ -70,3 +74,21 @@ class ImageSnapshot():
         if with_time:
             return (msg.header.stamp, data)
         return data
+
+    def camera_info(self, timeout=None):
+        """Read the camera info for this stream.
+
+        @param timeout: time to wait in seconds
+        """
+        topic = '/'.join(self._topic.split('/')[:-1] + ['camera_info'])
+        return wait_for_camera_info(topic, timeout=timeout)
+
+
+def wait_for_camera_info(topic, timeout=None):
+    """Read camera info from the topic.
+
+    @param topic: camera info topic
+    @param timeout: time in seconds
+    """
+    msg = rospy.wait_for_message(topic, CameraInfo, timeout=timeout)
+    return msg

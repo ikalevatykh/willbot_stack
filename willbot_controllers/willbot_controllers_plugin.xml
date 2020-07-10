@@ -12,7 +12,12 @@
   </class>
   <class name="willbot_controllers/CartesianVelocityForceTorqueLimitedController" type="willbot_controllers::CartesianVelocityForceTorqueLimitedController" base_class_type="controller_interface::ControllerBase">
     <description>
-      A controller that executes a motion based on cartesian velocities.
+      A controller that executes a motion based on cartesian velocities. Automatically stops if force limits violated.
+    </description>
+  </class>
+  <class name="willbot_controllers/JointTrajectoryForceTorqueLimitedController" type="willbot_controllers::JointTrajectoryForceTorqueLimitedController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a motion based on cartesian velocities. Automatically stops if force limits violated.
     </description>
   </class>
   <class name="willbot_controllers/JointVelocityController" type="willbot_controllers::JointVelocityController" base_class_type="controller_interface::ControllerBase">
@@ -22,7 +27,7 @@
   </class>
   <class name="willbot_controllers/JointVelocityForceTorqueLimitedController" type="willbot_controllers::JointVelocityForceTorqueLimitedController" base_class_type="controller_interface::ControllerBase">
     <description>
-      A controller that executes a motion based on cartesian velocities.
+      A controller that executes a motion based on cartesian velocities. Automatically stops if force limits violated.
     </description>
   </class>
   <class name="willbot_controllers/ForceTorqueSensorController" type="willbot_controllers::ForceTorqueSensorController" base_class_type="controller_interface::ControllerBase">

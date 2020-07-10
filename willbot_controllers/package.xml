@@ -16,6 +16,7 @@
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>hardware_interface</depend>
+  <depend>joint_trajectory_controller</depend>
   <depend>kdl_conversions</depend>
   <depend>kdl_parser</depend>
   <depend>pluginlib</depend>

@@ -7,10 +7,9 @@
 
 namespace willbot_controllers
 {
-bool CartesianVelocityController::init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& controller_nh)
+bool CartesianVelocityController::init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& /*root_nh*/,
+                                       ros::NodeHandle& nh)
 {
-  auto& nh = controller_nh;
-
   // Period for keeping previous command
   if (!nh.getParam("keep_command_duration", keep_command_duration_))
   {

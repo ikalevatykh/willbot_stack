@@ -6,7 +6,7 @@
   <xacro:arg name="kinematics_config" default="$(find willbot_description)/config/ur5_paris.yaml"/>
 
   <xacro:property name="setup" value="$(arg setup)"/>
-  <xacro:property name="kinematics_file" value="${load_yaml('$(arg kinematics_config)')}"/>  
+  <xacro:property name="kinematics_file" value="${load_yaml('$(arg kinematics_config)')}"/>
 
   <link name="world"/>
 

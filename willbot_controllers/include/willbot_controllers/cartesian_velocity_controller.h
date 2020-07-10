@@ -15,7 +15,8 @@ namespace willbot_controllers
 class CartesianVelocityController : public controller_interface::Controller<hardware_interface::VelocityJointInterface>
 {
 public:
-  virtual bool init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& controller_nh);
+  virtual bool init(hardware_interface::VelocityJointInterface* hw, ros::NodeHandle& /*root_nh*/,
+                    ros::NodeHandle& controller_nh);
   virtual void starting(const ros::Time& time);
   virtual void update(const ros::Time& time, const ros::Duration& /*period*/);
 
