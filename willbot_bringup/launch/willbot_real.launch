@@ -40,9 +40,8 @@
   </include>
 
   <!-- bringup arm -->
-  <include file="$(find willbot_bringup)/launch/ur_ros_control.launch">
+  <include file="$(find willbot_bringup)/launch/ur_ros_control.launch" ns="arm">
     <arg name="robot_ip" value="$(arg robot_ip)"/>
-    <arg name="arm_name" value="arm" />
   </include>
 
   <!-- combine joint states from arm and hand -->
@@ -61,9 +60,7 @@
   </include>
 
   <!-- sensors parameters -->
-  <group ns="sensors">
-    <rosparam file="$(find willbot_bringup)/config/sensors.yaml" command="load"/>
-  </group>
+  <rosparam file="$(find willbot_bringup)/config/sensors.yaml" command="load" ns="sensors"/>
 
   <!-- camera -->
   <include file="$(find willbot_bringup)/launch/camera_bringup.launch">
@@ -71,6 +68,6 @@
   </include>
 
   <!-- rviz -->
-  <include file="$(find willbot_moveit_config)/launch/moveit_rviz.launch" if="$(arg rviz)" />
+  <include file="$(find willbot_bringup)/launch/rviz.launch" if="$(arg rviz)" />
 
 </launch>
